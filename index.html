@@ -15,7 +15,6 @@
     <link rel="stylesheet" href="https://wwaifu.github.io/style">
     <link rel="shortcut icon" href="./favicon-32x32.png"type="image/x-icon">
     <style>
-        /* Reset CSS */
 * {
   margin: 0;
   padding: 0;
@@ -100,7 +99,39 @@ body {
 }
 
 #nsfwToggle:checked ~ .sfw {
-  display: flex;
+  display: none;
+}
+
+/* Dark Mode */
+body.dark-mode {
+  background-color: #333;
+  color: #fff;
+}
+
+.app.dark-mode {
+  background-color: #222;
+  box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
+}
+
+.toggle.dark-mode label {
+  color: #fff;
+}
+
+.random-waifu.dark-mode,
+.random-waifu-nsfw.dark-mode {
+  background-color: #444;
+}
+
+.random-waifu.dark-mode:hover,
+.random-waifu-nsfw.dark-mode:hover {
+  background-color: #222;
+}
+
+.form-select.dark-mode,
+.form-select-nsfw.dark-mode {
+  background-color: #444;
+  border-color: #fff;
+  color: #fff;
 }
     </style>
 </head>
