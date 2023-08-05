@@ -12,6 +12,95 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
     <link rel="stylesheet" href="https://wwaifu.github.io/style">
     <link rel="shortcut icon" href="./favicon-32x32.png"type="image/x-icon">
+    <style>
+        /* Reset CSS */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f8f8f8;
+}
+
+.app {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.image-wrapper {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.random-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.toggle label {
+  margin-left: 10px;
+  font-weight: bold;
+}
+
+.nsfw,
+.sfw {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.random-waifu,
+.random-waifu-nsfw {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.random-waifu:hover,
+.random-waifu-nsfw:hover {
+  background-color: #0056b3;
+}
+
+.form-select,
+.form-select-nsfw {
+  padding: 5px 10px;
+  border-radius: 4px;
+  background-color: #f8f8f8;
+  border: 1px solid #ccc;
+  outline: none;
+}
+
+.form-select-nsfw {
+  display: none;
+}
+
+#nsfwToggle:checked ~ .nsfw {
+  display: flex;
+}
+
+#nsfwToggle:checked ~ .sfw {
+  display: none;
+}
+    </style>
 </head>
 <body>
     
