@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VTriP-Search34</title>
+    <style>
+      body {
+    font-family: Arial, sans-serif;
+    background-color: #181818;
+    color: #e0e0e0;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+}
+
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.header-background {
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0));
+    padding: 20px 10px;
+    text-align: center;
+}
+
+h1 {
+    font-size: 24px;
+    margin: 0;
+    color: #ffffff;
+}
+
+.search-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 10px;
+}
+
+input[type="text"] {
+    padding: 10px;
+    font-size: 16px;
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 10px;
+    border: 1px solid #333;
+    border-radius: 5px;
+    background-color: #222;
+    color: #e0e0e0;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+main {
+    margin-top: 100px; /* Adjust this value to create space for the fixed header */
+    width: 100%;
+    max-width: 480px;
+}
+
+#results {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.result-item {
+    margin: 10px 0;
+    width: 100%;
+}
+
+.result-item img {
+    max-width: 100%;
+    border-radius: 5px;
+}
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-background">
+                <h1>VTriP-Search34</h1>
+                <div class="search-container">
+                    <input type="text" id="searchQuery" placeholder="Enter tags...">
+                    <button onclick="search()">Search</button>
+                </div>
+            </div>
+        </header>
+        <main id="results"></main>
+    </div>
+    <script>
+      async function search() {
+    const query = document.getElementById('searchQuery').value;
+    const url = `https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&tags=${encodeURIComponent(query)}`;
+    
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (!data.length) {
+            document.getElementById('results').innerHTML = '<p>No results found.</p>';
+            return;
+        }
+
+        const resultsContainer = document.getElementById('results');
+        resultsContainer.innerHTML = '';
+
+        data.forEach(post => {
+            const imgElement = document.createElement('img');
+            imgElement.src = post.file_url;
+            imgElement.alt = post.tags;
+            imgElement.className = 'result-item';
+
+            resultsContainer.appendChild(imgElement);
+        });
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        document.getElementById('results').innerHTML = '<p>Error fetching results.</p>';
+    }
+}
+
+// Function to get query parameter by name
+function getQueryParameter(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
+}
+
+// Check if there is a 'tags' parameter in the URL and perform search
+document.addEventListener('DOMContentLoaded', () => {
+    const tags = getQueryParameter('tags');
+    if (tags) {
+        document.getElementById('searchQuery').value = tags;
+        search();
+    }
+});
+
+    </script>
+</body>
+</html>
