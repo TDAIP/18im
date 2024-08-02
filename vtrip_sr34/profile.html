@@ -3,55 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VTriP-Search34 - Profile</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>VTriP-Sreach34 Profile</title>
+    <link rel="stylesheet" href="profile.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="header-background">
-                <h1>VTriP-Search34</h1>
-                <nav>
-                    <a href="index.html">Home</a>
-                    <a href="profile.html">Profile</a>
-                    <a href="login.html" id="logoutButton">Logout</a>
-                </nav>
+    <header>
+        <h1>VTriP-Sreach34</h1>
+        <div id="searchContainer">
+            <input type="text" id="searchInput" placeholder="Search...">
+            <button id="searchButton">
+                <img src="https://raw.githubusercontent.com/TDAIP/18im/main/search.png" alt="Search">
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <section id="profile" class="profile">
+            <div id="userDetails" class="user-details"></div>
+            <div id="followContainer" class="follow-container" style="display: none;">
+                <h2>Followers</h2>
+                <ul id="followersList"></ul>
+                <h2>Following</h2>
+                <ul id="followingList"></ul>
+                <button id="followButton">Follow</button>
             </div>
-        </header>
-        <main id="profile">
-            <div id="profileInfo">
-                <h2>Profile</h2>
-                <div id="userDetails"></div>
-                <div id="settings" style="display: none;">
-                    <h3>Settings</h3>
-                    <form id="settingsForm">
-                        <label for="avatarInput">Change Avatar:</label>
-                        <input type="file" id="avatarInput">
-                        <label for="nameInput">Change Name:</label>
-                        <input type="text" id="nameInput">
-                        <label for="emailInput">Change Email:</label>
-                        <input type="email" id="emailInput">
-                        <label for="passwordInput">Change Password:</label>
-                        <input type="password" id="passwordInput">
-                        <button type="submit">Save Changes</button>
-                    </form>
-                    <button id="deleteAccount">Delete Account</button>
-                </div>
-                <div id="followContainer" style="display: none;">
-                    <button id="followButton">Follow</button>
-                    <div id="followersList" style="display: none;">
-                        <h3>Followers:</h3>
-                        <ul id="followers"></ul>
-                    </div>
-                    <div id="followingList" style="display: none;">
-                        <h3>Following:</h3>
-                        <ul id="following"></ul>
-                    </div>
-                </div>
+            <div id="settings" style="display: none;">
+                <h2>Settings</h2>
+                <form id="settingsForm">
+                    <label for="nameInput">Name:</label>
+                    <input type="text" id="nameInput" required>
+                    <label for="emailInput">Email:</label>
+                    <input type="email" id="emailInput">
+                    <label for="passwordInput">Password:</label>
+                    <input type="password" id="passwordInput">
+                    <label for="avatarInput">Avatar:</label>
+                    <input type="file" id="avatarInput">
+                    <button type="submit">Save Changes</button>
+                </form>
+                <button id="deleteAccount">Delete Account</button>
             </div>
-        </main>
-    </div>
+        </section>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-storage.js"></script>
     <script src="profile.js"></script>
 </body>
-    </html>
-                        
+</html>
