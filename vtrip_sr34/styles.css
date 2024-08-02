@@ -1,4 +1,4 @@
-
+ii
 body {
     font-family: Arial, sans-serif;
     background-color: #181818;
@@ -54,4 +54,34 @@ a {
 
 a:hover {
     text-decoration: underline;
+}
+
+/* Existing styles remain unchanged */
+
+#settingsForm {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+#settingsForm label {
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+#settingsForm input {
+    padding: 10px;
+    font-size: 16px;
+    width: 100%;
+    margin-top: 5px;
+    border: 1px solid #333;
+    border-radius: 5px;
+    background-color: #333;
+    color: #e0e0e0;
+}
+
+#settingsForm button {
+    margin-top: 10px;
+    background-color: #007bff;
+    color: #fff;
 }
