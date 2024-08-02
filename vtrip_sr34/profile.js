@@ -104,12 +104,12 @@ async function toggleFollow() {
         const targetAccount = data.accounts[targetAccountKey];
 
         let updatedFollowing = [];
-        if (targetAccount.username.includes(loggedInUser.username)) {
+        if (targetAccount['who-follow'] && targetAccount['who-follow'].split(', ').includes(loggedInUser.username)) {
             // Unfollow
-            updatedFollowing = targetAccount['Following'].split(', ').filter(followed => followed !== loggedInUser.username);
+            updatedFollowing = targetAccount['who-follow'].split(', ').filter(followed => followed !== loggedInUser.username);
         } else {
             // Follow
-            updatedFollowing = targetAccount['Following'] ? [...targetAccount['Following'].split(', '), loggedInUser.username] : [loggedInUser.username];
+            updatedFollowing = targetAccount['who-follow'] ? [...targetAccount['who-follow'].split(', '), loggedInUser.username] : [loggedInUser.username];
         }
 
         const updates = {
@@ -166,5 +166,55 @@ async function saveChanges(event) {
             const storageRef = firebase.storage().ref();
             const avatarRef = storageRef.child('avatars/' + avatarFile.name);
             await avatarRef.put(avatarFile);
-            const avatarUrl = await avatarRef
-        
+            const avatarUrl = await avatarRef.getDownloadURL();
+            updates['/accounts/' + accountKey + '/avatar'] = avatarUrl.split('/o/')[1].split('?')[0]; // Extract the file path
+        }
+
+        await fetch(apiUrl, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updates)
+        });
+
+        alert('Changes saved successfully!');
+        window.location.reload();
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    }
+}
+
+async function deleteAccount() {
+    const username = getQueryParameter('username');
+    const loggedInUser = getLoggedInUser();
+
+    if (!username || !loggedInUser || loggedInUser.username !== username) {
+        alert('Unauthorized action.');
+        return;
+    }
+
+    try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        const accountKey = Object.keys(data.accounts).find(key => data.accounts[key].username === username);
+
+        if (!accountKey) {
+            alert('Account not found.');
+            return;
+        }
+
+        await fetch(apiUrl + '/accounts/' + accountKey + '.json', {
+            method: 'DELETE'
+        });
+
+        alert('Account deleted successfully!');
+        localStorage.removeItem('loggedInUser');
+        window.location.href = 'login.html'; // Redirect to login page
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadProfile);
+                                                                          
