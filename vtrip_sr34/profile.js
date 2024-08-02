@@ -1,3 +1,4 @@
+
 const apiUrl = 'https://im-a4c40-default-rtdb.asia-southeast1.firebasedatabase.app/accounts.json';
 const storageUrl = 'https://firebasestorage.googleapis.com/v0/b/im-a4c40.appspot.com/o/';
 
@@ -33,11 +34,11 @@ async function loadProfile() {
         userDetails.innerHTML = `
             <p><strong>Username:</strong> ${account.username}</p>
             <p><strong>Name:</strong> ${account.name}</p>
-            <p><strong>Email:</strong> ${account.email || 'N/A'}</p>
+            <p><strong>Email:</strong> ${account.gmail || 'N/A'}</p>
             <p><strong>Followers:</strong> ${account.Follower || 0}</p>
             <p><strong>Following:</strong> ${account.Following || 0}</p>
             <p><strong>Likes My Posts:</strong> ${account['likes-my-post'] || 0}</p>
-            <img src="${storageUrl}${account.avatar}?alt=media" alt="Avatar" style="width: 100px; height: 100px; border-radius: 50%;">
+            <img src="${storageUrl}${encodeURIComponent(account.avatar)}?alt=media" alt="Avatar" style="width: 100px; height: 100px; border-radius: 50%;">
         `;
 
         if (loggedInUser) {
@@ -67,7 +68,7 @@ async function loadFollowersAndFollowing(username) {
             const followersList = document.getElementById('followers');
             const followingList = document.getElementById('following');
             const followers = account['who-follow'] ? account['who-follow'].split(', ') : [];
-            const following = account['Following'] ? account['Following'].split(', ') : [];
+            const following = account.Following ? account.Following.split(', ') : [];
 
             followersList.innerHTML = followers.map(follower => `<li>${follower}</li>`).join('');
             followingList.innerHTML = following.map(followed => `<li>${followed}</li>`).join('');
@@ -221,4 +222,3 @@ async function deleteAccount() {
 }
 
 document.addEventListener('DOMContentLoaded', loadProfile);
-            
