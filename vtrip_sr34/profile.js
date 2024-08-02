@@ -1,4 +1,4 @@
-const apiUrl = 'https://im-a4c40-default-rtdb.asia-southeast1.firebasedatabase.app/.json';
+const apiUrl = 'https://im-a4c40-default-rtdb.asia-southeast1.firebasedatabase.app/accounts.json';
 const storageUrl = 'https://firebasestorage.googleapis.com/v0/b/im-a4c40.appspot.com/o/';
 
 function getQueryParameter(name) {
@@ -22,7 +22,7 @@ async function loadProfile() {
     try {
         const response = await fetch(apiUrl);
         const data = await response.json();
-        const account = Object.values(data.accounts).find(acc => acc.username === username);
+        const account = Object.values(data).find(acc => acc.username === username);
 
         if (!account) {
             document.getElementById('profile').innerHTML = '<p>User not found.</p>';
@@ -33,10 +33,10 @@ async function loadProfile() {
         userDetails.innerHTML = `
             <p><strong>Username:</strong> ${account.username}</p>
             <p><strong>Name:</strong> ${account.name}</p>
-            <p><strong>Email:</strong> ${account.gmail || 'N/A'}</p>
-            <p><strong>Followers:</strong> ${account.Follower}</p>
-            <p><strong>Following:</strong> ${account.Following}</p>
-            <p><strong>Likes My Posts:</strong> ${account['likes-my-post']}</p>
+            <p><strong>Email:</strong> ${account.email || 'N/A'}</p>
+            <p><strong>Followers:</strong> ${account.Follower || 0}</p>
+            <p><strong>Following:</strong> ${account.Following || 0}</p>
+            <p><strong>Likes My Posts:</strong> ${account['likes-my-post'] || 0}</p>
             <img src="${storageUrl}${account.avatar}?alt=media" alt="Avatar" style="width: 100px; height: 100px; border-radius: 50%;">
         `;
 
@@ -58,25 +58,30 @@ async function loadProfile() {
 }
 
 async function loadFollowersAndFollowing(username) {
-    const response = await fetch(apiUrl);
-    const data = await response.json();
-    const account = Object.values(data.accounts).find(acc => acc.username === username);
+    try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        const account = Object.values(data).find(acc => acc.username === username);
 
-    if (account) {
-        const followersList = document.getElementById('followers');
-        const followingList = document.getElementById('following');
-        const followers = account['who-follow'] ? account['who-follow'].split(', ') : [];
-        const following = account['Following'] ? account['Following'].split(', ') : [];
+        if (account) {
+            const followersList = document.getElementById('followers');
+            const followingList = document.getElementById('following');
+            const followers = account['who-follow'] ? account['who-follow'].split(', ') : [];
+            const following = account['Following'] ? account['Following'].split(', ') : [];
 
-        followersList.innerHTML = followers.map(follower => `<li>${follower}</li>`).join('');
-        followingList.innerHTML = following.map(followed => `<li>${followed}</li>`).join('');
+            followersList.innerHTML = followers.map(follower => `<li>${follower}</li>`).join('');
+            followingList.innerHTML = following.map(followed => `<li>${followed}</li>`).join('');
 
-        if (followers.length > 0) {
-            document.getElementById('followersList').style.display = 'block';
+            if (followers.length > 0) {
+                document.getElementById('followersList').style.display = 'block';
+            }
+            if (following.length > 0) {
+                document.getElementById('followingList').style.display = 'block';
+            }
         }
-        if (following.length > 0) {
-            document.getElementById('followingList').style.display = 'block';
-        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while loading followers and following.');
     }
 }
 
@@ -92,29 +97,28 @@ async function toggleFollow() {
     try {
         const response = await fetch(apiUrl);
         const data = await response.json();
-        const loggedInAccountKey = Object.keys(data.accounts).find(key => data.accounts[key].username === loggedInUser.username);
-        const targetAccountKey = Object.keys(data.accounts).find(key => data.accounts[key].username === username);
+        const loggedInAccountKey = Object.keys(data).find(key => data[key].username === loggedInUser.username);
+        const targetAccountKey = Object.keys(data).find(key => data[key].username === username);
 
         if (!loggedInAccountKey || !targetAccountKey) {
             alert('Account not found.');
             return;
         }
 
-        const loggedInAccount = data.accounts[loggedInAccountKey];
-        const targetAccount = data.accounts[targetAccountKey];
+        const loggedInAccount = data[loggedInAccountKey];
+        const targetAccount = data[targetAccountKey];
 
-        let updatedFollowing = [];
+        let updatedWhoFollow = [];
         if (targetAccount['who-follow'] && targetAccount['who-follow'].split(', ').includes(loggedInUser.username)) {
             // Unfollow
-            updatedFollowing = targetAccount['who-follow'].split(', ').filter(followed => followed !== loggedInUser.username);
+            updatedWhoFollow = targetAccount['who-follow'].split(', ').filter(followed => followed !== loggedInUser.username);
         } else {
             // Follow
-            updatedFollowing = targetAccount['who-follow'] ? [...targetAccount['who-follow'].split(', '), loggedInUser.username] : [loggedInUser.username];
+            updatedWhoFollow = targetAccount['who-follow'] ? [...targetAccount['who-follow'].split(', '), loggedInUser.username] : [loggedInUser.username];
         }
 
         const updates = {
-            [`/accounts/${targetAccountKey}/who-follow`]: updatedFollowing.join(', '),
-            [`/accounts/${targetAccountKey}/Following`]: updatedFollowing.join(', ')
+            [`/${targetAccountKey}/who-follow`]: updatedWhoFollow.join(', ')
         };
 
         await fetch(apiUrl, {
@@ -127,7 +131,7 @@ async function toggleFollow() {
         loadProfile(); // Reload profile to update follow status
     } catch (error) {
         console.error('Error:', error);
-        alert('An error occurred. Please try again.');
+        alert('An error occurred while updating follow status.');
     }
 }
 
@@ -150,7 +154,7 @@ async function saveChanges(event) {
     try {
         const response = await fetch(apiUrl);
         const data = await response.json();
-        const accountKey = Object.keys(data.accounts).find(key => data.accounts[key].username === username);
+        const accountKey = Object.keys(data).find(key => data[key].username === username);
 
         if (!accountKey) {
             alert('Account not found.');
@@ -158,16 +162,16 @@ async function saveChanges(event) {
         }
 
         const updates = {};
-        if (name) updates['/accounts/' + accountKey + '/name'] = name;
-        if (email) updates['/accounts/' + accountKey + '/gmail'] = email;
-        if (password) updates['/accounts/' + accountKey + '/password'] = password;
+        if (name) updates[`/${accountKey}/name`] = name;
+        if (email) updates[`/${accountKey}/email`] = email;
+        if (password) updates[`/${accountKey}/password`] = password;
 
         if (avatarFile) {
             const storageRef = firebase.storage().ref();
             const avatarRef = storageRef.child('avatars/' + avatarFile.name);
             await avatarRef.put(avatarFile);
             const avatarUrl = await avatarRef.getDownloadURL();
-            updates['/accounts/' + accountKey + '/avatar'] = avatarUrl.split('/o/')[1].split('?')[0]; // Extract the file path
+            updates[`/${accountKey}/avatar`] = avatarUrl.split('/o/')[1].split('?')[0]; // Extract the file path
         }
 
         await fetch(apiUrl, {
@@ -180,7 +184,7 @@ async function saveChanges(event) {
         window.location.reload();
     } catch (error) {
         console.error('Error:', error);
-        alert('An error occurred. Please try again.');
+        alert('An error occurred while saving changes.');
     }
 }
 
@@ -196,14 +200,14 @@ async function deleteAccount() {
     try {
         const response = await fetch(apiUrl);
         const data = await response.json();
-        const accountKey = Object.keys(data.accounts).find(key => data.accounts[key].username === username);
+        const accountKey = Object.keys(data).find(key => data[key].username === username);
 
         if (!accountKey) {
             alert('Account not found.');
             return;
         }
 
-        await fetch(apiUrl + '/accounts/' + accountKey + '.json', {
+        await fetch(apiUrl + '/' + accountKey + '.json', {
             method: 'DELETE'
         });
 
@@ -212,9 +216,9 @@ async function deleteAccount() {
         window.location.href = 'login.html'; // Redirect to login page
     } catch (error) {
         console.error('Error:', error);
-        alert('An error occurred. Please try again.');
+        alert('An error occurred while deleting the account.');
     }
 }
 
 document.addEventListener('DOMContentLoaded', loadProfile);
-                                                                          
+            
