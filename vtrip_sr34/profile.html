@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VTriP-Search34 - Profile</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-background">
+                <h1>VTriP-Search34</h1>
+                <nav>
+                    <a href="index.html">Home</a>
+                    <a href="profile.html">Profile</a>
+                    <a href="login.html" id="logoutButton">Logout</a>
+                </nav>
+            </div>
+        </header>
+        <main id="profile">
+            <div id="profileInfo">
+                <h2>Profile</h2>
+                <div id="userDetails"></div>
+                <div id="settings" style="display: none;">
+                    <h3>Settings</h3>
+                    <form id="settingsForm">
+                        <label for="avatarInput">Change Avatar:</label>
+                        <input type="file" id="avatarInput">
+                        <label for="nameInput">Change Name:</label>
+                        <input type="text" id="nameInput">
+                        <label for="emailInput">Change Email:</label>
+                        <input type="email" id="emailInput">
+                        <label for="passwordInput">Change Password:</label>
+                        <input type="password" id="passwordInput">
+                        <button type="submit">Save Changes</button>
+                    </form>
+                    <button id="deleteAccount">Delete Account</button>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="profile.js"></script>
+</body>
+</html>
