@@ -1,4 +1,3 @@
-
 const apiUrl = 'https://im-a4c40-default-rtdb.asia-southeast1.firebasedatabase.app/accounts.json';
 const storageUrl = 'https://firebasestorage.googleapis.com/v0/b/im-a4c40.appspot.com/o/';
 
@@ -38,7 +37,7 @@ async function loadProfile() {
             <p><strong>Followers:</strong> ${account.Follower || 0}</p>
             <p><strong>Following:</strong> ${account.Following || 0}</p>
             <p><strong>Likes My Posts:</strong> ${account['likes-my-post'] || 0}</p>
-            <img src="${storageUrl}${encodeURIComponent(account.avatar)}?alt=media" alt="Avatar" style="width: 100px; height: 100px; border-radius: 50%;">
+            <img src="${storageUrl}${encodeURIComponent(account.avatar)}?alt=media" alt="Avatar">
         `;
 
         if (loggedInUser) {
@@ -65,8 +64,8 @@ async function loadFollowersAndFollowing(username) {
         const account = Object.values(data).find(acc => acc.username === username);
 
         if (account) {
-            const followersList = document.getElementById('followers');
-            const followingList = document.getElementById('following');
+            const followersList = document.getElementById('followersList');
+            const followingList = document.getElementById('followingList');
             const followers = account['who-follow'] ? account['who-follow'].split(', ') : [];
             const following = account.Following ? account.Following.split(', ') : [];
 
@@ -112,24 +111,26 @@ async function toggleFollow() {
         let updatedWhoFollow = [];
         if (targetAccount['who-follow'] && targetAccount['who-follow'].split(', ').includes(loggedInUser.username)) {
             // Unfollow
-            updatedWhoFollow = targetAccount['who-follow'].split(', ').filter(followed => followed !== loggedInUser.username);
+            updatedWhoFollow = targetAccount['who-follow'].split(', ').filter(f => f !== loggedInUser.username);
         } else {
             // Follow
-            updatedWhoFollow = targetAccount['who-follow'] ? [...targetAccount['who-follow'].split(', '), loggedInUser.username] : [loggedInUser.username];
+            updatedWhoFollow = [...(targetAccount['who-follow'] ? targetAccount['who-follow'].split(', ') : []), loggedInUser.username];
         }
 
-        const updates = {
-            [`/${targetAccountKey}/who-follow`]: updatedWhoFollow.join(', ')
+        const updatedTargetAccount = {
+            ...targetAccount,
+            'who-follow': updatedWhoFollow.join(', ')
         };
 
-        await fetch(apiUrl, {
+        await fetch(`${apiUrl}/${targetAccountKey}`, {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updates)
+            body: JSON.stringify(updatedTargetAccount),
+            headers: {
+                'Content-Type': 'application/json'
+            }
         });
 
-        alert('Follow status updated!');
-        loadProfile(); // Reload profile to update follow status
+        alert('Follow status updated.');
     } catch (error) {
         console.error('Error:', error);
         alert('An error occurred while updating follow status.');
@@ -139,82 +140,90 @@ async function toggleFollow() {
 async function saveChanges(event) {
     event.preventDefault();
 
-    const username = getQueryParameter('username');
-    const loggedInUser = getLoggedInUser();
-
-    if (!username || !loggedInUser || loggedInUser.username !== username) {
-        alert('Unauthorized action.');
-        return;
-    }
-
     const name = document.getElementById('nameInput').value;
     const email = document.getElementById('emailInput').value;
     const password = document.getElementById('passwordInput').value;
-    const avatarFile = document.getElementById('avatarInput').files[0];
+    const avatar = document.getElementById('avatarInput').files[0];
+
+    const loggedInUser = getLoggedInUser();
+    if (!loggedInUser) {
+        alert('User not logged in.');
+        return;
+    }
 
     try {
         const response = await fetch(apiUrl);
         const data = await response.json();
-        const accountKey = Object.keys(data).find(key => data[key].username === username);
+        const userKey = Object.keys(data).find(key => data[key].username === loggedInUser.username);
 
-        if (!accountKey) {
-            alert('Account not found.');
+        if (!userKey) {
+            alert('User not found.');
             return;
         }
 
-        const updates = {};
-        if (name) updates[`/${accountKey}/name`] = name;
-        if (email) updates[`/${accountKey}/email`] = email;
-        if (password) updates[`/${accountKey}/password`] = password;
+        let updatedUser = {
+            ...data[userKey],
+            name,
+            gmail: email,
+            password
+        };
 
-        if (avatarFile) {
-            const storageRef = firebase.storage().ref();
-            const avatarRef = storageRef.child('avatars/' + avatarFile.name);
-            await avatarRef.put(avatarFile);
-            const avatarUrl = await avatarRef.getDownloadURL();
-            updates[`/${accountKey}/avatar`] = avatarUrl.split('/o/')[1].split('?')[0]; // Extract the file path
+        if (avatar) {
+            const avatarUrl = await uploadAvatar(avatar);
+            updatedUser.avatar = avatarUrl;
         }
 
-        await fetch(apiUrl, {
+        await fetch(`${apiUrl}/${userKey}`, {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updates)
+            body: JSON.stringify(updatedUser),
+            headers: {
+                'Content-Type': 'application/json'
+            }
         });
 
-        alert('Changes saved successfully!');
-        window.location.reload();
+        localStorage.setItem('loggedInUser', JSON.stringify(updatedUser));
+        alert('Changes saved successfully.');
     } catch (error) {
         console.error('Error:', error);
         alert('An error occurred while saving changes.');
     }
 }
 
-async function deleteAccount() {
-    const username = getQueryParameter('username');
-    const loggedInUser = getLoggedInUser();
+async function uploadAvatar(file) {
+    const storageRef = firebase.storage().ref();
+    const fileRef = storageRef.child('avatars/' + file.name);
+    await fileRef.put(file);
+    return fileRef.getDownloadURL();
+}
 
-    if (!username || !loggedInUser || loggedInUser.username !== username) {
-        alert('Unauthorized action.');
+async function deleteAccount() {
+    if (!confirm('Are you sure you want to delete your account?')) {
+        return;
+    }
+
+    const loggedInUser = getLoggedInUser();
+    if (!loggedInUser) {
+        alert('User not logged in.');
         return;
     }
 
     try {
         const response = await fetch(apiUrl);
         const data = await response.json();
-        const accountKey = Object.keys(data).find(key => data[key].username === username);
+        const userKey = Object.keys(data).find(key => data[key].username === loggedInUser.username);
 
-        if (!accountKey) {
-            alert('Account not found.');
+        if (!userKey) {
+            alert('User not found.');
             return;
         }
 
-        await fetch(apiUrl + '/' + accountKey + '.json', {
+        await fetch(`${apiUrl}/${userKey}`, {
             method: 'DELETE'
         });
 
-        alert('Account deleted successfully!');
         localStorage.removeItem('loggedInUser');
-        window.location.href = 'login.html'; // Redirect to login page
+        alert('Account deleted successfully.');
+        window.location.href = 'login.html';
     } catch (error) {
         console.error('Error:', error);
         alert('An error occurred while deleting the account.');
