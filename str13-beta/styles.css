@@ -1,0 +1,87 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #121212;
+    color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    text-align: center;
+    background-color: #1e1e1e;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    width: 80%;
+    max-width: 800px;
+    overflow-y: auto; /* Thêm cuộn nếu nội dung quá dài */
+    height: 90vh; /* Đảm bảo phần hướng dẫn có thể cuộn */
+}
+
+textarea, input[type="text"] {
+    width: 100%;
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #252525;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+}
+
+textarea {
+    height: 100px;
+    resize: none;
+}
+
+.buttons {
+    display: flex;
+    justify-content: space-between;
+}
+
+button {
+    background-color: #ff5722;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+button:hover {
+    background-color: #e64a19;
+}
+
+.section {
+    margin-bottom: 20px;
+}
+
+.integration-guide {
+    text-align: left;
+    background-color: #333;
+    padding: 20px;
+    border-radius: 5px;
+    color: #ffffff;
+    overflow: auto; /* Thêm cuộn cho phần hướng dẫn */
+}
+
+.integration-guide h2 {
+    margin-top: 0;
+}
+
+pre {
+    background-color: #252525;
+    padding: 10px;
+    border-radius: 5px;
+    overflow-x: auto; /* Thêm cuộn ngang nếu cần */
+    white-space: pre-wrap; /* Cho phép xuống dòng trong đoạn mã */
+}
+
+code {
+    font-family: monospace;
+    color: #c5c5c5;
+}
