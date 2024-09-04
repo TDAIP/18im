@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhiteArea - Whiteboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="toolbar">
+        <button id="undo-button" class="toolbar-btn">
+            <i class="fas fa-undo"></i>
+            <span>Undo</span>
+        </button>
+        <button id="redo-button" class="toolbar-btn">
+            <i class="fas fa-redo"></i>
+            <span>Redo</span>
+        </button>
+        <button id="draw-button" class="toolbar-btn">
+            <i class="fas fa-paint-brush"></i>
+            <span>Draw</span>
+        </button>
+        <button id="erase-button" class="toolbar-btn">
+            <i class="fas fa-eraser"></i>
+            <span>Erase</span>
+        </button>
+        <button id="options-button" class="toolbar-btn">
+            <i class="fas fa-cogs"></i>
+            <span>Options</span>
+        </button>
+    </div>
+
+    <div id="draw-toolbar-more" class="toolbar-more hidden">
+        <div class="tool-section">
+            <label for="basic-colors">Colors</label>
+            <div id="basic-colors"></div>
+            <button id="add-color-button" class="toolbar-btn">
+                <i class="fas fa-plus"></i>
+            </button>
+        </div>
+        <div class="tool-section">
+            <label for="brush-size">Size</label>
+            <input type="range" id="brush-size" min="1" max="20" value="5">
+        </div>
+        <div id="brush-preview"></div>
+        <div class="tool-section">
+            <button id="add-text-button" class="toolbar-btn">
+                <i class="fas fa-font"></i>
+                <span>Add Text</span>
+            </button>
+            <button id="add-pic-button" class="toolbar-btn">
+                <i class="fas fa-image"></i>
+                <span>Add Pic</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="options-toolbar-more" class="toolbar-more hidden">
+        <div class="tool-section">
+            <button id="clear-button" class="toolbar-btn">
+                <i class="fas fa-trash"></i>
+                <span>Clear</span>
+            </button>
+        </div>
+        <div class="tool-section">
+            <button id="download-button" class="toolbar-btn">
+                <i class="fas fa-download"></i>
+                <span>Download</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="whiteboard-container">
+        <canvas id="whiteboard"></canvas>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
