@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Key Checker</title>
+</head>
+<body>
+    <script>
+        async function checkKey() {
+            // Lấy key từ URL (?=key)
+            const urlParams = new URLSearchParams(window.location.search);
+            const key = urlParams.get('');
+
+            if (!key) {
+                document.body.textContent = 'false';
+                return;
+            }
+
+            try {
+                // Lấy dữ liệu từ file key.jk trên GitHub
+                const response = await fetch('https://raw.githubusercontent.com/TDAIP/keylist-key.jk/refs/heads/main/key.jk');
+                const text = await response.text();
+
+                // Kiểm tra nếu key có trong danh sách
+                const regex = new RegExp(`key:"${key}"`, 'i');
+                const isKeyPresent = regex.test(text);
+
+                // Hiển thị kết quả true hoặc false
+                document.body.textContent = isKeyPresent ? 'true' : 'false';
+            } catch (error) {
+                document.body.textContent = 'false';
+                console.error(error);
+            }
+        }
+
+        checkKey();
+    </script>
+</body>
+</html>
