@@ -7,9 +7,18 @@
       "tags": [
         "Ok",
         " oka",
-        " แ"
+        " รก"
       ],
       "image": "https://me.com"
+    },
+    {
+      "title": "Oke แ",
+      "subtitle": "Uk",
+      "author": "Me",
+      "tags": [
+        "Xv"
+      ],
+      "image": "https://api.github.com/repos/${repo}/contents/${path"
     }
   ]
 }
