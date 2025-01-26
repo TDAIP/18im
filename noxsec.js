@@ -1,4 +1,5 @@
 (function() {
+    
     // Xóa tất cả nội dung và hiển thị giao diện bảo mật
     function showSecurityInterface() {
         // Xóa tất cả nội dung HTML
