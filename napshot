@@ -1,1 +1,95 @@
-<h1>hi<h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Napshot</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #202332;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    h1 {
+      color: #FF4444;
+      font-size: 2rem;
+    }
+
+    p {
+      font-size: 1.2rem;
+    }
+
+    .error {
+      border: 2px solid #FF4444;
+      padding: 20px;
+      text-align: center;
+      border-radius: 8px;
+    }
+
+    .screenshot {
+      text-align: center;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      margin-top: 20px;
+      border: 1px solid #292D40;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div id="content"></div>
+
+  <script>
+    (function () {
+      // Parse URL Parameters
+      const params = new URLSearchParams(window.location.search);
+      const thumb = params.get('thumb');
+      const url = params.get('url');
+
+      const contentDiv = document.getElementById('content');
+
+      if (thumb && url) {
+        // Display screenshot and URL if parameters are provided
+        const sanitizedUrl = encodeURIComponent(url);
+        const sanitizedThumb = encodeURIComponent(thumb);
+        const id = Math.floor(Math.random() * 1000000); // Random ID for the image
+
+        contentDiv.innerHTML = `
+          <div class="screenshot">
+            <h1>Snapshot Viewer</h1>
+            <p>URL: ${sanitizedUrl}</p>
+            <img src="${sanitizedThumb}" alt="Snapshot Image" />
+            <p>Image saved as: snapshot_${id}.png</p>
+          </div>
+        `;
+      } else {
+        // Display error message if parameters are missing
+        contentDiv.innerHTML = `
+          <div class="error">
+            <h1>System Error</h1>
+            <p>Error Code: 404</p>
+            <p>Reason: Unable to fetch thumbnail or URL.</p>
+          </div>
+        `;
+      }
+
+      // Obfuscate script in DevTools
+      Object.defineProperty(document, "currentScript", {
+        get: function () {
+          return null;
+        },
+      });
+    })();
+  </script>
+</body>
+</html>
