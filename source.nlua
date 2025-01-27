@@ -1,0 +1,37 @@
+-- source.nlua
+-- Đây là file mã nguồn giả lập NoxLua
+
+-- Hàm để thực hiện việc kết hợp chuỗi và số
+function concatStringsAndNumbers(...)
+    local result = ""
+    for _, value in ipairs({...}) do
+        result = result .. tostring(value)  -- Kết hợp từng giá trị vào chuỗi
+    end
+    return result
+end
+
+-- Chức năng để kiểm tra cú pháp của các biểu thức trong code
+function validateExpression(expression)
+    if expression == nil or expression == "" then
+        return false, "Empty expression"
+    end
+    -- Kiểm tra một số cú pháp cơ bản
+    if not string.match(expression, "in%([%w%s%+%-%*/%=%(%)]+%)") then
+        return false, "Invalid syntax"
+    end
+    return true
+end
+
+-- Mã lệnh chính được gọi trong code chính
+function processInput(input)
+    local isValid, errorMsg = validateExpression(input)
+    if not isValid then
+        return "Error: " .. errorMsg
+    end
+    
+    -- Thực hiện việc xử lý kết hợp chuỗi và số trong input
+    local expr = string.match(input, 'in%((.*)%)') -- Lấy biểu thức trong dấu ngoặc
+    local result = concatStringsAndNumbers(expr)
+    
+    return result
+end
