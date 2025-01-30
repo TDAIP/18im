@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HuChat - Mobile</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Font và màu sắc */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 95%;
+            max-width: 400px;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+        }
+
+        .header {
+            background: #ff6b81;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .message {
+            max-width: 75%;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 14px;
+            word-wrap: break-word;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        .my-message {
+            align-self: flex-end;
+            background: #ff6b81;
+            color: white;
+        }
+
+        .other-message {
+            align-self: flex-start;
+            background: #f1f1f1;
+        }
+
+        .view-count {
+            font-size: 12px;
+            color: #555;
+            display: flex;
+            align-items: center;
+            margin-top: 5px;
+            transition: transform 0.2s ease, opacity 0.3s ease;
+        }
+
+        .view-count:hover {
+            transform: scale(1.1);
+            opacity: 0.8;
+        }
+
+        .view-count i {
+            font-size: 16px;
+            color: white;
+            margin-right: 8px;  /* Khoảng cách giữa icon và số người xem */
+        }
+
+        .view-count span {
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .view-count:hover span {
+            color: #ff6b81;
+        }
+
+        .input-area {
+            display: flex;
+            padding: 10px;
+            background: white;
+            border-top: 1px solid #ddd;
+        }
+
+        input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 20px;
+            outline: none;
+            background: #f1f1f1;
+        }
+
+        button {
+            background: #ff6b81;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 20px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .login {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 10px;
+            padding: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <div class="header">HuChat - Mobile</div>
+
+        <!-- Đăng nhập -->
+        <div class="login" id="loginScreen">
+            <h2>Chào mừng đến với HuChat</h2>
+            <input type="text" id="username" placeholder="Nhập tên của bạn">
+            <button onclick="login()">Vào chat</button>
+        </div>
+
+        <!-- Phòng chat -->
+        <div class="messages hidden" id="chatScreen"></div>
+
+        <!-- Gửi tin nhắn -->
+        <div class="input-area hidden" id="inputArea">
+            <input type="text" id="messageInput" placeholder="Nhập tin nhắn...">
+            <button onclick="sendMessage()">Gửi</button>
+        </div>
+    </div>
+
+    <script>
+        const dbUrl = "https://im-a4c40-default-rtdb.asia-southeast1.firebasedatabase.app/messages.json";
+        let username = localStorage.getItem("username");
+
+        const loginScreen = document.getElementById("loginScreen");
+        const chatScreen = document.getElementById("chatScreen");
+        const inputArea = document.getElementById("inputArea");
+        const messageInput = document.getElementById("messageInput");
+
+        if (username) {
+            showChat();
+        }
+
+        function login() {
+            const inputName = document.getElementById("username").value.trim();
+            if (inputName === "") return alert("Bạn phải nhập tên!");
+            username = inputName;
+            localStorage.setItem("username", username);
+            showChat();
+        }
+
+        function showChat() {
+            loginScreen.classList.add("hidden");
+            chatScreen.classList.remove("hidden");
+            inputArea.classList.remove("hidden");
+            loadMessages();
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message === "") return;
+
+            const msgData = {
+                user: username,
+                text: message,
+                timestamp: new Date().toISOString(),
+                views: []  // Danh sách người đã xem
+            };
+
+            await fetch(dbUrl, {
+                method: "POST",
+                body: JSON.stringify(msgData),
+                headers: { "Content-Type": "application/json" }
+            });
+
+            messageInput.value = "";
+        }
+
+        async function loadMessages() {
+            setInterval(async () => {
+                const res = await fetch(dbUrl);
+                const data = await res.json();
+                chatScreen.innerHTML = "";
+
+                if (data) {
+                    Object.entries(data).forEach(([msgId, msg]) => {
+                        const msgElement = document.createElement("div");
+                        msgElement.classList.add("message");
+                        msgElement.classList.add(msg.user === username ? "my-message" : "other-message");
+                        msgElement.innerHTML = `<b>${msg.user}</b>: ${msg.text}
+                            <div class="view-count">
+                                <i class="fas fa-eye"></i>
+                                <span>${msg.views ? msg.views.length : 0}</span>
+                            </div>`;
+
+                        chatScreen.appendChild(msgElement);
+
+                        if (!msg.views || !msg.views.includes(username)) {
+                            updateViewCount(msgId, msg.views || []);
+                        }
+                    });
+
+                    chatScreen.scrollTop = chatScreen.scrollHeight;
+                }
+            }, 1000);
+        }
+
+        async function updateViewCount(msgId, views) {
+            views.push(username);
+
+            const updateUrl = `https://im-a4c40-default-rtdb.asia-southeast1.firebasedatabase.app/messages/${msgId}/views.json`;
+            await fetch(updateUrl, {
+                method: "PUT",
+                body: JSON.stringify(views),
+                headers: { "Content-Type": "application/json" }
+            });
+        }
+    </script>
+
+</body>
+</html>
