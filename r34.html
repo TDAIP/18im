@@ -1,10 +1,14 @@
+<?php
+  // Lấy dữ liệu từ API
+  $json = file_get_contents('https://api.rule34.xxx//index.php?page=dapi&s=post&q=index&json=1&tags=');
+?>
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=https://api.rule34.xxx//index.php?page=dapi&s=post&q=index&json=1&tags=">
-  <title>Redirecting...</title>
+  <title>Nội dung API</title>
 </head>
 <body>
+  <pre><?php echo htmlspecialchars($json); ?></pre>
 </body>
 </html>
