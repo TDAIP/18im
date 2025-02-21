@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nikip 2.0 - AI Assistant</title>
+  <style>
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #3498db;
+      --accent-color: #e74c3c;
+      --background-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--background-gradient);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    
+    .container {
+      position: relative;
+      width: 100%;
+      max-width: 900px;
+      padding: 2rem;
+    }
+    
+    /* Robot Design */
+    .robot-container {
+      position: relative;
+      width: 320px;
+      height: 520px;
+      margin: 0 auto;
+      perspective: 1200px;
+    }
+    
+    .robot {
+      position: absolute;
+      width: 260px;
+      height: 480px;
+      transform-style: preserve-3d;
+      animation: float 4s ease-in-out infinite;
+      transition: transform 0.3s ease;
+    }
+    
+    .robot:hover {
+      transform: scale(1.05) rotateZ(2deg);
+    }
+    
+    .robot-head {
+      position: absolute;
+      width: 160px;
+      height: 160px;
+      background: linear-gradient(145deg, #ecf0f1, #bdc3c7);
+      border-radius: 40% 40% 30% 30%;
+      top: 0;
+      left: 50px;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+      transform: rotateX(10deg);
+      overflow: hidden;
+    }
+    
+    .antenna {
+      position: absolute;
+      width: 10px;
+      height: 45px;
+      background: var(--secondary-color);
+      border-radius: 5px;
+      animation: antenna 2s ease-in-out infinite;
+    }
+    
+    .antenna.left { left: 35px; transform: rotate(-15deg); }
+    .antenna.right { right: 35px; transform: rotate(15deg); }
+    
+    .eyes-container {
+      position: absolute;
+      top: 45px;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+    }
+    
+    .eye {
+      width: 45px;
+      height: 65px;
+      background: var(--primary-color);
+      border-radius: 25px;
+      overflow: hidden;
+      position: relative;
+      transform: rotateX(10deg);
+      transition: 0.3s all ease;
+    }
+    
+    .eye::after {
+      content: '';
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      background: #fff;
+      border-radius: 50%;
+      top: 20px;
+      left: 11px;
+      opacity: 0.9;
+      animation: blink 5s infinite;
+    }
+    
+    @keyframes blink {
+      0%, 95%, 100% { opacity: 0.9; }
+      97%, 98% { opacity: 0.2; }
+    }
+    
+    .robot-body {
+      position: absolute;
+      top: 150px;
+      width: 220px;
+      height: 280px;
+      left: 20px;
+      background: linear-gradient(145deg, #ecf0f1, #bdc3c7);
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      transform: rotateX(5deg);
+      overflow: hidden;
+    }
+    
+    .glow {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 20px;
+      animation: glow 2s ease-in-out infinite;
+      opacity: 0.3;
+      pointer-events: none;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotateX(5deg); }
+      50% { transform: translateY(-20px) rotateX(5deg); }
+    }
+    
+    @keyframes antenna {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 0 30px rgba(52, 152, 219, 0.2); }
+      50% { box-shadow: 0 0 50px rgba(52, 152, 219, 0.4); }
+    }
+    
+    /* Answer Box */
+    .answer-container {
+      position: relative;
+      margin-top: 120px;
+      transform: translateZ(50px);
+      text-align: center;
+    }
+    
+    .answer-box {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      min-height: 150px;
+      transform-style: preserve-3d;
+      transition: 0.5s all ease;
+      position: relative;
+      border: 2px solid transparent;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    .answer-box::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      border: 2px solid var(--primary-color);
+      opacity: 0.1;
+      pointer-events: none;
+    }
+    
+    .typing-indicator {
+      display: flex;
+      gap: 5px;
+      position: absolute;
+      bottom: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    
+    .dot {
+      width: 10px;
+      height: 10px;
+      background: var(--secondary-color);
+      border-radius: 50%;
+      animation: bounce 1s infinite;
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    /* Verification Styles */
+    .verified {
+      border-color: #2ecc71 !important;
+      background: linear-gradient(45deg, rgba(46, 204, 113, 0.1), transparent);
+    }
+    
+    .unverified {
+      border-color: #e74c3c !important;
+      background: linear-gradient(45deg, rgba(231, 76, 60, 0.1), transparent);
+    }
+    
+    .neutral {
+      border-color: #3498db !important;
+      background: linear-gradient(45deg, rgba(52, 152, 219, 0.1), transparent);
+    }
+    
+    /* Text Effects */
+    .answer-text {
+      font-size: 1.2rem;
+      line-height: 1.6;
+      color: var(--primary-color);
+      position: relative;
+      min-height: 100px;
+    }
+    
+    .cursor {
+      display: inline-block;
+      width: 10px;
+      height: 1.2em;
+      background: var(--secondary-color);
+      vertical-align: middle;
+      margin-left: 2px;
+      animation: blink 1s infinite;
+    }
+    
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="robot-container">
+      <div class="robot">
+        <div class="robot-head">
+          <div class="antenna left"></div>
+          <div class="antenna right"></div>
+          <div class="eyes-container">
+            <div class="eye"></div>
+            <div class="eye"></div>
+          </div>
+        </div>
+        <div class="robot-body">
+          <div class="glow"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="answer-container">
+      <div class="answer-box" id="answerBox">
+        <div class="answer-text" id="answerText"></div>
+        <div class="typing-indicator" id="typingIndicator">
+          <div class="dot" style="animation-delay: 0s"></div>
+          <div class="dot" style="animation-delay: 0.2s"></div>
+          <div class="dot" style="animation-delay: 0.4s"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const answerBox = document.getElementById('answerBox');
+    const answerText = document.getElementById('answerText');
+    const typingIndicator = document.getElementById('typingIndicator');
+    
+    function parseQuery() {
+      const params = new URLSearchParams(window.location.search);
+      return {
+        question: params.get('eq') || '',
+        verify: (params.get('Verify') || 'default').toLowerCase()
+      };
+    }
+    
+    function generateResponse() {
+      const { question, verify } = parseQuery();
+      
+      if (!question) {
+        showMessage('Hãy đặt câu hỏi thông qua URL: ?eq=[câu hỏi]&Verify=[yes/no/default]');
+        return;
+      }
+      
+      showTypingIndicator();
+      simulateProcessing(() => {
+        const response = createResponse(question, verify);
+        typeResponse(response);
+      });
+    }
+    
+    function createResponse(question, verify) {
+      const responses = {
+        yes: {
+          message: `✅ Câu hỏi: ${question}<br><br>Thông tin đã được xác minh bởi Nikip AI. Độ tin cậy: 95%`,
+          style: 'verified'
+        },
+        no: {
+          message: `⚠️ Câu hỏi: ${question}<br><br>Thông tin chưa được xác minh. Khuyến nghị kiểm tra nguồn đa dạng.`,
+          style: 'unverified'
+        },
+        default: {
+          message: `❓ Câu hỏi: ${question}<br><br>Kết quả tổng hợp từ nhiều nguồn. Trạng thái xác minh: Chưa hoàn tất.`,
+          style: 'neutral'
+        }
+      };
+      
+      return responses[verify] || responses.default;
+    }
+    
+    function showMessage(message) {
+      answerText.innerHTML = message;
+      typingIndicator.style.display = 'none';
+    }
+    
+    function showTypingIndicator() {
+      typingIndicator.style.display = 'flex';
+      answerBox.classList.add('processing');
+    }
+    
+    function hideTypingIndicator() {
+      typingIndicator.style.display = 'none';
+      answerBox.classList.remove('processing');
+    }
+    
+    function simulateProcessing(callback) {
+      setTimeout(callback, 1500);
+    }
+    
+    function typeResponse(response) {
+      answerText.innerHTML = '';
+      answerBox.className = `answer-box ${response.style}`;
+      
+      let index = 0;
+      const interval = 50; // tốc độ gõ
+      
+      const typing = setInterval(() => {
+        if (index < response.message.length) {
+          answerText.innerHTML += response.message.charAt(index);
+          index++;
+        } else {
+          clearInterval(typing);
+          hideTypingIndicator();
+        }
+      }, interval);
+    }
+    
+    window.onload = generateResponse;
+  </script>
+</body>
+</html>
