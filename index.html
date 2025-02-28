@@ -1,208 +1,734 @@
-
-
-
-
-
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Random Waifu Generator</title>
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://wwaifu.github.io/style">
-    <link rel="shortcut icon" href="./favicon-32x32.png"type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SolarBoard - Web Vẽ Mobile (Vô Hạn & Tối Ưu)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+        body { margin: 0; overflow: hidden; font-family: 'Roboto', sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f8f8f8;
-}
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #f39c12;
+            --background-color: #f4f7f9;
+            --toolbar-background: #fff;
+            --text-color: #333;
+            --icon-color: #555;
+            --icon-hover-color: var(--primary-color);
+            --icon-active-color: #fff;
+            --button-background: #fff;
+            --button-hover-background: #f0f0f0;
+            --button-active-background: var(--primary-color);
+            --border-color: #ddd;
+        }
 
-.app {
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
+        #toolbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 80px;
+            height: 100vh;
+            background-color: var(--toolbar-background);
+            padding: 20px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 100;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+        }
 
-.image-wrapper {
-  text-align: center;
-  margin-bottom: 20px;
-}
+        #toolbar button {
+            margin-bottom: 15px;
+            padding: 12px;
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            border: none;
+            background-color: var(--button-background);
+            color: var(--icon-color);
+            cursor: pointer;
+            font-size: 1.5em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
 
-.random-image {
-  max-width: 100%;
-  height: auto;
-  border-radius: 8px;
-}
+        #toolbar button:hover {
+            background-color: var(--button-hover-background);
+            color: var(--icon-hover-color);
+        }
 
-.toggle {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-}
+        #toolbar button.active, #toolbar button.selected { /* Thêm class 'selected' */
+            background-color: var(--button-active-background);
+            color: var(--icon-active-color);
+        }
 
-.toggle label {
-  margin-left: 10px;
-  font-weight: bold;
-}
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 80px;
+            width: calc(100vw - 80px);
+            height: 100vh;
+            overflow: hidden;
+            touch-action: none;
+            background-color: var(--background-color);
+            cursor: grab;
+        }
+        #canvas-container.panning {
+            cursor: grabbing;
+        }
 
-.nsfw,
-.sfw {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
+        #drawing-canvas-container {
+            position: absolute;
+            width: fit-content;
+            height: fit-content;
+        }
 
-.random-waifu,
-.random-waifu-nsfw {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  background-color: #007bff;
-  color: #fff;
-  font-weight: bold;
-  cursor: pointer;
-}
+        .drawing-chunk-canvas {
+            display: block;
+            background-color: white;
+            cursor: crosshair;
+            border-radius: 0;
+            position: absolute;
+        }
 
-.random-waifu:hover,
-.random-waifu-nsfw:hover {
-  background-color: #0056b3;
-}
+        /* Thêm style cho color picker và size input */
+        #color-picker {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            background-color: transparent;
+            cursor: pointer;
+            padding: 0;
+            margin-bottom: 15px;
+        }
 
-.form-select,
-.form-select-nsfw {
-  padding: 5px 10px;
-  border-radius: 4px;
-  background-color: #f8f8f8;
-  border: 1px solid #ccc;
-  outline: none;
-}
+        #color-picker::-webkit-color-swatch-wrapper { padding: 0; }
+        #color-picker::-webkit-color-swatch { border: 2px solid var(--border-color); border-radius: 50%; }
+        #color-picker::-moz-color-swatch-wrapper { padding: 0; }
+        #color-picker::-moz-color-swatch { border: 2px solid var(--border-color); border-radius: 50%; }
 
-.form-select-nsfw {
-  display: none;
-}
+        #pen-size-input {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 10px;
+            background-color: var(--button-background);
+            color: var(--text-color);
+            font-size: 1em;
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 0;
+            -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+            -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+            box-sizing: border-box;         /* Opera/IE 8+ */
+        }
+        #pen-size-input:focus {
+            outline: none;
+            border: 2px solid var(--primary-color);
+        }
 
-#nsfwToggle:checked ~ .nsfw {
-  display: flex;
-}
 
-#nsfwToggle:checked ~ .sfw {
-  display: none;
-}
+        /* Style cho watermark */
+        #watermark {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8em;
+            color: rgba(0, 0, 0, 0.2);
+            z-index: 99;
+            pointer-events: none; /* Không cho phép watermark chặn sự kiện chuột */
+        }
 
-/* Dark Mode */
-body.dark-mode {
-  background-color: #333;
-  color: #fff;
-}
+        /* Style cho modal thông báo */
+        #maintenance-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Backdrop tối */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* Đảm bảo modal ở trên cùng */
+        }
 
-.app.dark-mode {
-  background-color: #222;
-  box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
-}
+        #maintenance-modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        }
 
-.toggle.dark-mode label {
-  color: #fff;
-}
+        #maintenance-modal h2 {
+            margin-top: 0;
+            color: var(--secondary-color);
+        }
 
-.random-waifu.dark-mode,
-.random-waifu-nsfw.dark-mode {
-  background-color: #444;
-}
+        #maintenance-modal p {
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
 
-.random-waifu.dark-mode:hover,
-.random-waifu-nsfw.dark-mode:hover {
-  background-color: #222;
-}
+        #maintenance-modal button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.2s ease;
+        }
 
-.form-select.dark-mode,
-.form-select-nsfw.dark-mode {
-  background-color: #444;
-  border-color: #fff;
-  color: #fff;
-}
+        #maintenance-modal button:hover {
+            background-color: var(--icon-hover-color);
+        }
+
+
+        @media (max-width: 768px) {
+            #toolbar { width: 60px; padding: 10px; }
+            #toolbar button { width: 40px; height: 40px; padding: 8px; font-size: 1.2em; }
+            #canvas-container { left: 60px; width: calc(100vw - 60px); }
+            #maintenance-modal-content { padding: 20px; }
+            #maintenance-modal h2 { font-size: 1.5em; }
+            #maintenance-modal p { font-size: 1em; }
+            #maintenance-modal button { font-size: 1em; padding: 8px 16px; }
+        }
     </style>
 </head>
 <body>
-    
-    <div class="app">
-        <div class="image-wrapper">
-
-            <img class="random-image img-fluid" src="" alt="">
-        </div>
-
-        <div class="toggle">
-            <input type="checkbox" id="nsfwToggle">
-            <label for="nsfwToggle">  SEX</label>
-        </div>
-
-
-        <div class="nsfw">
-            <button class="random-waifu-nsfw"> generate </button>
-
-            <select class="form-select form-select-nsfw">
-                <option value="waifu">waifu</option>
-                <option value="neko">neko</option>
-                <option value="trap">trap</option>
-                <option value="blowjob">blowjob</option>
-                <option value="loli">loli</option>
-                <option value="VTGSSR">Power By VTGSSR</option>
-              </select>
-        
+    <div id="toolbar">
+        <button id="pen-button" class="active" title="Bút"><i class="fas fa-pen"></i></button>
+        <button id="eraser-button" title="Tẩy"><i class="fas fa-eraser"></i></button>
+        <button id="stroke-eraser-button" title="Xóa nét vẽ"><i class="fas fa-vector-square"></i></button>
+        <button id="clear-button" title="Xóa bảng vẽ"><i class="fas fa-trash"></i></button>
+        <input type="color" id="color-picker" value="#000000" title="Chọn màu bút">
+        <input type="number" id="pen-size-input" value="2" min="1" max="50" title="Kích thước bút">
+        <button id="undo-button" title="Undo"><i class="fas fa-undo"></i></button>
+        <button id="redo-button" title="Redo"><i class="fas fa-redo"></i></button>
+        <!-- Thêm các nút công cụ khác vào đây -->
+    </div>
+    <div id="canvas-container">
+        <div id="drawing-canvas-container">
+            <!-- Các chunk canvas sẽ được thêm vào đây -->
         </div>
     </div>
-        <div class="sfw">
-            <button class="random-waifu" > generate </button>
 
-            <select class="form-select">
-                <option value="waifu">waifu</option>
-                <option value="neko">neko</option>
-                <option value="shinobu">shinobu</option>
-                <option value="megumin">megumin</option>
-                <option value="bully">bully</option>
-                <option value="cuddle">cuddle</option>
-                <option value="cry">cry</option>
-                <option value="hug">hug</option>
-                <option value="awoo">awoo</option>
-                <option value="kiss">kiss</option>
-                <option value="lick">lick</option>
-                <option value="pat">pat</option>
-                <option value="sumg">smug</option>
-                <option value="bonk">bonk</option>
-                <option value="yeet">yeet</option>
-                <option value="blush">blush</option>
-                <option value="smile">smile</option>
-                <option value="wave">wave</option>
-                <option value="highfive">highfive</option>
-                <option value="handhold">handhold</option>
-                <option value="nom">nom</option>
-                <option value="bite">bite</option>
-                <option value="glomp">glomp</option>
-                <option value="slap">slap</option>
-                <option value="kill">kill</option>
-                <option value="kick">kick</option>
-                <option value="happy">happy</option>
-                <option value="wink">wink</option>
-                <option value="poke">poke</option>
-                <option value="dance">dance</option>
-                <option value="cringe">cringe</option>
-              </select>
-        
+    <div id="watermark">@VTriP Official - SolarBoard 1.0 Beta</div>
+
+    <div id="maintenance-modal">
+        <div id="maintenance-modal-content">
+            <h2>Chế độ Online Đang Bảo Trì</h2>
+            <p>Xin lỗi, chế độ trực tuyến của SolarBoard hiện đang được bảo trì để nâng cấp và cải thiện trải nghiệm của bạn. Chế độ Offline vẫn hoạt động bình thường.</p>
+            <button id="close-modal-button">Tiếp tục sử dụng Offline</button>
+        </div>
     </div>
-<script src="https://wwaifu.github.io/main.js"></script>
+
+
+    <script>
+        const canvasContainer = document.getElementById('canvas-container');
+        const drawingCanvasContainer = document.getElementById('drawing-canvas-container');
+        const penButton = document.getElementById('pen-button');
+        const eraserButton = document.getElementById('eraser-button');
+        const strokeEraserButton = document.getElementById('stroke-eraser-button');
+        const clearButton = document.getElementById('clear-button');
+        const colorPicker = document.getElementById('color-picker');
+        const penSizeInput = document.getElementById('pen-size-input');
+        const undoButton = document.getElementById('undo-button');
+        const redoButton = document.getElementById('redo-button');
+        const maintenanceModal = document.getElementById('maintenance-modal');
+        const closeModalButton = document.getElementById('close-modal-button');
+
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+        let penColor = colorPicker.value; // Lấy màu từ color picker
+        let penSize = parseInt(penSizeInput.value); // Lấy size từ input, đảm bảo là số nguyên
+        let currentTool = 'pen';
+        let currentStroke = null;
+        let strokes = [];
+        let isStrokeErasing = false;
+        let history = []; // Mảng lưu trữ history các strokes
+        let historyStep = -1; // Bước history hiện tại
+
+        const chunkSize = 500;
+        const chunks = {};
+
+        let scale = 1;
+        let translateX = 0;
+        let translateY = 0;
+        let isPanning = false;
+        let startX = 0;
+        let startY = 0;
+        let initialPinchDistance = null;
+        let lastScale = 1;
+        const minScale = 0.2;
+        const maxScale = 4;
+
+        // **Ẩn modal bảo trì sau khi load trang (nếu muốn modal hiển thị ban đầu)**
+        // maintenanceModal.style.display = 'none'; // Nếu muốn ẩn modal sau khi load trang
+
+        // **Đóng modal khi click nút**
+        closeModalButton.addEventListener('click', () => {
+            maintenanceModal.style.display = 'none';
+        });
+
+
+        function getChunkCoords(x, y) {
+            const chunkX = Math.floor(x / chunkSize);
+            const chunkY = Math.floor(y / chunkSize);
+            return `${chunkX}_${chunkY}`;
+        }
+
+        function getChunkCanvas(chunkX, chunkY) {
+            const chunkId = `${chunkX}_${chunkY}`;
+            if (!chunks[chunkId]) {
+                const chunkCanvas = document.createElement('canvas');
+                chunkCanvas.className = 'drawing-chunk-canvas';
+                chunkCanvas.width = chunkSize;
+                chunkCanvas.height = chunkSize;
+                chunkCanvas.style.left = `${chunkX * chunkSize}px`;
+                chunkCanvas.style.top = `${chunkY * chunkSize}px`;
+                drawingCanvasContainer.appendChild(chunkCanvas);
+                chunks[chunkId] = chunkCanvas;
+                return chunkCanvas.getContext('2d');
+            }
+            return chunks[chunkId].getContext('2d');
+        }
+
+        function drawLineInChunk(ctx, x1, y1, x2, y2, color, size) {
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = size;
+            ctx.lineCap = 'round';
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        }
+
+        let drawQueue = [];
+        let isAnimating = false;
+
+        function queueDraw(chunkId, x1, y1, x2, y2, color, size) {
+            drawQueue.push({ chunkId, x1, y1, x2, y2, color, size });
+            if (!isAnimating) {
+                isAnimating = true;
+                animateDraw();
+            }
+        }
+
+        function animateDraw() {
+            requestAnimationFrame(() => {
+                if (drawQueue.length > 0) {
+                    const drawData = drawQueue.shift();
+                    const chunkCtx = getChunkCanvasFromId(drawData.chunkId);
+                    if (chunkCtx) {
+                        drawLineInChunk(chunkCtx, drawData.x1, drawData.y1, drawData.x2, drawData.y2, drawData.color, drawData.size);
+                    }
+                    animateDraw();
+                } else {
+                    isAnimating = false;
+                }
+            });
+        }
+
+        function getChunkCanvasFromId(chunkId) {
+            if (chunks[chunkId]) {
+                return chunks[chunkId].getContext('2d');
+            }
+            return null;
+        }
+
+        function handleDraw(e) {
+            if (!isDrawing || isPanning) return;
+            e.preventDefault();
+
+            let mouseX, mouseY;
+            if (e.touches) {
+                mouseX = (e.touches[0].clientX - canvasContainer.offsetLeft) / scale - translateX;
+                mouseY = (e.touches[0].clientY - canvasContainer.offsetTop) / scale - translateY;
+            } else {
+                mouseX = (e.clientX - canvasContainer.offsetLeft) / scale - translateX;
+                mouseY = (e.clientY - canvasContainer.offsetTop) / scale - translateY;
+            }
+
+            const startChunkCoords = getChunkCoords(lastX, lastY);
+            const endChunkCoords = getChunkCoords(mouseX, mouseY);
+
+            if (currentTool === 'pen' || currentTool === 'eraser') {
+                const drawColor = currentTool === 'eraser' ? 'white' : penColor;
+                const drawSize = currentTool === 'eraser' ? 10 : penSize;
+                if (startChunkCoords === endChunkCoords) {
+                    const chunkId = startChunkCoords;
+                    const ctx = getChunkCanvas(parseInt(chunkId.split('_')[0]), parseInt(chunkId.split('_')[1]));
+                    if (ctx) {
+                        queueDraw(chunkId, lastX % chunkSize, lastY % chunkSize, mouseX % chunkSize, mouseY % chunkSize, drawColor, drawSize);
+                    }
+                } else {
+                    const chunkIdEnd = endChunkCoords;
+                    const ctxEnd = getChunkCanvas(parseInt(chunkIdEnd.split('_')[0]), parseInt(chunkIdEnd.split('_')[1]));
+                    if (ctxEnd) {
+                        queueDraw(chunkIdEnd, lastX % chunkSize, lastY % chunkSize, mouseX % chunkSize, mouseY % chunkSize, drawColor, drawSize);
+                    }
+                }
+            }
+
+            if (currentTool === 'pen') {
+                currentStroke.push({x: mouseX, y: mouseY});
+            }
+
+            lastX = mouseX;
+            lastY = mouseY;
+        }
+
+
+        function startDrawing(e) {
+            if (isPanning) return;
+            isDrawing = true;
+            let mouseX, mouseY;
+            if (e.touches) {
+                mouseX = (e.touches[0].clientX - canvasContainer.offsetLeft) / scale - translateX;
+                mouseY = (e.touches[0].clientY - canvasContainer.offsetTop) / scale - translateY;
+            } else {
+                mouseX = (e.clientX - canvasContainer.offsetLeft) / scale - translateX;
+                mouseY = (e.clientY - canvasContainer.offsetTop) / scale - translateY;
+            }
+            lastX = mouseX;
+            lastY = mouseY;
+
+             if (navigator.vibrate) {
+                navigator.vibrate(10);
+            }
+            if (currentTool === 'pen') {
+                currentStroke = [{x: lastX, y: lastY, color: penColor, size: penSize}]; // Lưu color và size vào stroke
+                strokes.push(currentStroke);
+                saveHistory(); // Lưu history khi bắt đầu vẽ nét mới
+            }
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+            currentStroke = null;
+            isStrokeErasing = false;
+            canvasContainer.removeEventListener('mousemove', handleStrokeEraseMove);
+            canvasContainer.removeEventListener('touchmove', handleStrokeEraseMove);
+        }
+
+        // **Sự kiện Mouse**
+        canvasContainer.addEventListener('mousedown', startDrawing);
+        canvasContainer.addEventListener('mousemove', handleDraw);
+        canvasContainer.addEventListener('mouseup', stopDrawing);
+        canvasContainer.addEventListener('mouseout', stopDrawing);
+
+        // **Sự kiện Touch (passive: false)**
+        canvasContainer.addEventListener('touchstart', startDrawing);
+        canvasContainer.addEventListener('touchmove', handleDraw, { passive: false });
+        canvasContainer.addEventListener('touchend', stopDrawing);
+        canvasContainer.addEventListener('touchcancel', stopDrawing);
+
+        // **Xử lý nút công cụ**
+        penButton.addEventListener('click', () => {
+            currentTool = 'pen';
+            penButton.classList.add('active');
+            eraserButton.classList.remove('active');
+            strokeEraserButton.classList.remove('active');
+            penButton.classList.add('selected'); // Thêm class 'selected'
+            eraserButton.classList.remove('selected');
+            strokeEraserButton.classList.remove('selected');
+            console.log("Công cụ: Bút");
+        });
+
+        eraserButton.addEventListener('click', () => {
+            currentTool = 'eraser';
+            eraserButton.classList.add('active');
+            penButton.classList.remove('active');
+            strokeEraserButton.classList.remove('active');
+            eraserButton.classList.add('selected'); // Thêm class 'selected'
+            penButton.classList.remove('selected');
+            strokeEraserButton.classList.remove('selected');
+            console.log("Công cụ: Tẩy");
+        });
+
+        clearButton.addEventListener('click', () => {
+            for (const chunkId in chunks) {
+                if (chunks.hasOwnProperty(chunkId)) {
+                    const ctx = chunks[chunkId].getContext('2d');
+                    ctx.clearRect(0, 0, chunkSize, chunkSize);
+                }
+            }
+            strokes = [];
+            saveHistory(); // Lưu history sau khi clear
+            renderVisibleChunks();
+            console.log("Canvas đã được xóa");
+        });
+
+        strokeEraserButton.addEventListener('click', () => {
+            currentTool = 'stroke-eraser';
+            strokeEraserButton.classList.add('active');
+            penButton.classList.remove('active');
+            eraserButton.classList.remove('active');
+            strokeEraserButton.classList.add('selected'); // Thêm class 'selected'
+            penButton.classList.remove('selected');
+            eraserButton.classList.remove('selected');
+            console.log("Công cụ: Xóa nét vẽ");
+        });
+
+        colorPicker.addEventListener('change', (e) => {
+            penColor = e.target.value;
+            console.log("Màu bút: ", penColor);
+        });
+
+        penSizeInput.addEventListener('change', (e) => {
+            penSize = parseInt(e.target.value);
+            penSize = Math.max(1, Math.min(penSize, 50)); // Giới hạn size từ 1 đến 50
+            penSizeInput.value = penSize; // Cập nhật lại giá trị input nếu bị vượt quá giới hạn
+            console.log("Kích thước bút: ", penSize);
+        });
+
+        // **Undo/Redo**
+        undoButton.addEventListener('click', undo);
+        redoButton.addEventListener('click', redo);
+
+        function saveHistory() {
+            const currentHistory = strokes.map(stroke => [...stroke]); // Sao chép stroke để không bị ảnh hưởng bởi thay đổi sau
+            if (historyStep < history.length - 1) {
+                history = history.slice(0, historyStep + 1); // Cắt bỏ redo history nếu có hành động mới
+            }
+            history.push(currentHistory);
+            historyStep++;
+            console.log("History saved, step:", historyStep, "history length:", history.length);
+        }
+
+        function undo() {
+            if (historyStep > 0) {
+                historyStep--;
+                strokes = history[historyStep].map(stroke => [...stroke]); // Load stroke từ history
+                renderVisibleChunks();
+                console.log("Undo, step:", historyStep);
+            }
+        }
+
+        function redo() {
+            if (historyStep < history.length - 1) {
+                historyStep++;
+                strokes = history[historyStep].map(stroke => [...stroke]); // Load stroke từ history
+                renderVisibleChunks();
+                console.log("Redo, step:", historyStep);
+            }
+        }
+
+
+        // **Zoom và Pan**
+        canvasContainer.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                isPanning = true;
+                canvasContainer.classList.add('panning');
+
+                startX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+                startY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                initialPinchDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                lastScale = scale;
+            }
+        });
+
+        canvasContainer.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 2 && isPanning) {
+                e.preventDefault();
+
+                const currentX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+                const currentY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                translateX += (currentX - startX) / scale;
+                translateY += (currentY - startY) / scale;
+                startX = currentX;
+                startY = currentY;
+
+                const currentPinchDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                if (initialPinchDistance !== null) {
+                    scale = lastScale * (currentPinchDistance / initialPinchDistance);
+                    scale = Math.max(minScale, Math.min(scale, maxScale));
+                }
+
+                applyTransform();
+                renderVisibleChunks();
+            }
+        });
+
+        canvasContainer.addEventListener('touchend', (e) => {
+            if (e.touches.length < 2) {
+                isPanning = false;
+                canvasContainer.classList.remove('panning');
+                initialPinchDistance = null;
+            }
+        });
+
+        function applyTransform() {
+            drawingCanvasContainer.style.transform = `translate(${translateX * scale}px, ${translateY * scale}px) scale(${scale})`;
+        }
+
+        function renderVisibleChunks() {
+            const containerWidth = canvasContainer.offsetWidth;
+            const containerHeight = canvasContainer.offsetHeight;
+
+            const viewLeft = -translateX;
+            const viewTop = -translateY;
+            const viewRight = viewLeft + containerWidth / scale;
+            const viewBottom = viewTop + containerHeight / scale;
+
+            const startChunkX = Math.floor(viewLeft / chunkSize);
+            const startChunkY = Math.floor(viewTop / chunkSize);
+            const endChunkX = Math.ceil(viewRight / chunkSize);
+            const endChunkY = Math.ceil(viewBottom / chunkSize);
+
+            for (let chunkX = startChunkX; chunkX < endChunkX; chunkX++) {
+                for (let chunkY = startChunkY; chunkY < endChunkY; chunkY++) {
+                    const chunkId = `${chunkX}_${chunkY}`;
+                    getChunkCanvas(chunkX, chunkY);
+                }
+            }
+            redrawAllChunks();
+        }
+
+        function redrawAllChunks() {
+            for (const chunkId in chunks) {
+                if (chunks.hasOwnProperty(chunkId)) {
+                    const ctx = chunks[chunkId].getContext('2d');
+                    ctx.clearRect(0, 0, chunkSize, chunkSize);
+                }
+            }
+            strokes.forEach(stroke => {
+                for (let i = 0; i < stroke.length - 1; i++) {
+                    const p1 = stroke[i];
+                    const p2 = stroke[i+1];
+                    const startChunkCoords = getChunkCoords(p1.x, p1.y);
+                    const endChunkCoords = getChunkCoords(p2.x, p2.y);
+                    const drawColor = p1.color; // Lấy màu từ điểm đầu nét vẽ
+                    const drawSize = p1.size;   // Lấy size từ điểm đầu nét vẽ
+                    if (startChunkCoords === endChunkCoords) {
+                        const chunkId = startChunkCoords;
+                        const ctx = getChunkCanvasFromId(chunkId);
+                        if (ctx) {
+                            drawLineInChunk(ctx, p1.x % chunkSize, p1.y % chunkSize, p2.x % chunkSize, p2.y % chunkSize, drawColor, drawSize);
+                        }
+                    } else {
+                        const chunkIdEnd = endChunkCoords;
+                        const ctxEnd = getChunkCanvasFromId(chunkIdEnd);
+                        if (ctxEnd) {
+                            drawLineInChunk(ctxEnd, p1.x % chunkSize, p1.y % chunkSize, p2.x % chunkSize, p2.y % chunkSize, drawColor, drawSize);
+                        }
+                    }
+                }
+            });
+        }
+
+
+        applyTransform();
+        renderVisibleChunks();
+        canvasContainer.addEventListener('resize', renderVisibleChunks);
+
+        // **Stroke Eraser (Cải tiến vuốt kéo như Eraser thường)**
+        canvasContainer.addEventListener('mousedown', startStrokeErase);
+        canvasContainer.addEventListener('touchstart', startStrokeErase);
+        canvasContainer.addEventListener('mouseup', stopStrokeErase);
+        canvasContainer.addEventListener('mouseout', stopStrokeErase);
+        canvasContainer.addEventListener('touchend', stopStrokeErase);
+        canvasContainer.addEventListener('touchcancel', stopStrokeErase);
+
+
+        function startStrokeErase(e) {
+            if (currentTool === 'stroke-eraser') {
+                isStrokeErasing = true;
+                lastX = e.touches ? (e.touches[0].clientX - canvasContainer.offsetLeft) / scale - translateX : (e.clientX - canvasContainer.offsetLeft) / scale - translateX;
+                lastY = e.touches ? (e.touches[0].clientY - canvasContainer.offsetTop) / scale - translateY : (e.clientY - canvasContainer.offsetTop) / scale - translateY;
+                canvasContainer.addEventListener('mousemove', handleStrokeEraseMove);
+                canvasContainer.addEventListener('touchmove', handleStrokeEraseMove, { passive: false });
+            }
+        }
+
+        function handleStrokeEraseMove(e) {
+            if (!isStrokeErasing) return;
+
+            let mouseX, mouseY;
+            if (e.touches) {
+                mouseX = (e.touches[0].clientX - canvasContainer.offsetLeft) / scale - translateX;
+                mouseY = (e.touches[0].clientY - canvasContainer.offsetTop) / scale - translateY;
+            } else {
+                mouseX = (e.clientX - canvasContainer.offsetLeft) / scale - translateX;
+                mouseY = (e.clientY - canvasContainer.offsetTop) / scale - translateY;
+            }
+
+            const steps = 5;
+            for (let i = 0; i <= steps; i++) {
+                const testX = lastX + (mouseX - lastX) * i / steps;
+                const testY = lastY + (mouseY - lastY) * i / steps;
+                const erasedStrokeIndex = findStrokeAtPoint(testX, testY);
+                if (erasedStrokeIndex !== -1) {
+                    strokes.splice(erasedStrokeIndex, 1);
+                    saveHistory(); // Lưu history khi xóa stroke
+                    renderVisibleChunks();
+                    break;
+                }
+            }
+
+            lastX = mouseX;
+            lastY = mouseY;
+
+        }
+
+
+        function stopStrokeErase(e) {
+            isStrokeErasing = false;
+            canvasContainer.removeEventListener('mousemove', handleStrokeEraseMove);
+            canvasContainer.removeEventListener('touchmove', handleStrokeEraseMove);
+        }
+
+
+        function findStrokeAtPoint(x, y) {
+            for (let i = strokes.length - 1; i >= 0; i--) {
+                const stroke = strokes[i];
+                for (let j = 0; j < stroke.length - 1; j++) {
+                    const p1 = stroke[j];
+                    const p2 = stroke[j+1];
+                    if (isPointOnLine(x, y, p1.x, p1.y, p2.x, p2.y, 5)) {
+                        return i;
+                    }
+                }
+            }
+            return -1;
+        }
+
+        function isPointOnLine(px, py, x1, y1, x2, y2, tolerance) {
+            const d = Math.abs((y2 - y1) * px - (x2 - x1) * py + x2 * y1 - y2 * x1) / Math.sqrt(Math.pow(y2 - y1, 2) + Math.pow(x2 - x1, 2));
+            if (d <= tolerance) {
+                const dotProduct = (px - x1) * (x2 - x1) + (py - y1) * (y2 - y1);
+                const squaredLength = Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2);
+                if (dotProduct >= 0 && dotProduct <= squaredLength) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    </script>
 </body>
-                                                   </html>
-
+</html>
