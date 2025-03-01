@@ -1,734 +1,418 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SolarBoard - Web Vẽ Mobile (Vô Hạn & Tối Ưu)</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        body { margin: 0; overflow: hidden; font-family: 'Roboto', sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SolarBoard - Web Vẽ Mobile (Vô Hạn & Tối Ưu)</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: 'Roboto', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    :root {
+      --primary-color: #6363DF;
+      --secondary-color: #f39c12;
+      --background-color: #f4f7f9;
+      --toolbar-background: #fff;
+      --text-color: #333;
+      --icon-color: #555;
+      --icon-hover-color: var(--primary-color);
+      --icon-active-color: white;
+      --button-background: #fff;
+      --button-hover-background: #f0f0f0;
+      --button-active-background: var(--primary-color);
+      --border-color: #ddd;
+    }
 
-        :root {
-            --primary-color: #3498db;
-            --secondary-color: #f39c12;
-            --background-color: #f4f7f9;
-            --toolbar-background: #fff;
-            --text-color: #333;
-            --icon-color: #555;
-            --icon-hover-color: var(--primary-color);
-            --icon-active-color: #fff;
-            --button-background: #fff;
-            --button-hover-background: #f0f0f0;
-            --button-active-background: var(--primary-color);
-            --border-color: #ddd;
-        }
-
-        #toolbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 80px;
-            height: 100vh;
-            background-color: var(--toolbar-background);
-            padding: 20px 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            z-index: 100;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
-        }
-
-        #toolbar button {
-            margin-bottom: 15px;
-            padding: 12px;
-            width: 50px;
-            height: 50px;
-            border-radius: 10px;
-            border: none;
-            background-color: var(--button-background);
-            color: var(--icon-color);
-            cursor: pointer;
-            font-size: 1.5em;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: background-color 0.2s ease, color 0.2s ease;
-        }
-
-        #toolbar button:hover {
-            background-color: var(--button-hover-background);
-            color: var(--icon-hover-color);
-        }
-
-        #toolbar button.active, #toolbar button.selected { /* Thêm class 'selected' */
-            background-color: var(--button-active-background);
-            color: var(--icon-active-color);
-        }
-
-        #canvas-container {
-            position: absolute;
-            top: 0;
-            left: 80px;
-            width: calc(100vw - 80px);
-            height: 100vh;
-            overflow: hidden;
-            touch-action: none;
-            background-color: var(--background-color);
-            cursor: grab;
-        }
-        #canvas-container.panning {
-            cursor: grabbing;
-        }
-
-        #drawing-canvas-container {
-            position: absolute;
-            width: fit-content;
-            height: fit-content;
-        }
-
-        .drawing-chunk-canvas {
-            display: block;
-            background-color: white;
-            cursor: crosshair;
-            border-radius: 0;
-            position: absolute;
-        }
-
-        /* Thêm style cho color picker và size input */
-        #color-picker {
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            width: 40px;
-            height: 40px;
-            border: none;
-            border-radius: 50%;
-            background-color: transparent;
-            cursor: pointer;
-            padding: 0;
-            margin-bottom: 15px;
-        }
-
-        #color-picker::-webkit-color-swatch-wrapper { padding: 0; }
-        #color-picker::-webkit-color-swatch { border: 2px solid var(--border-color); border-radius: 50%; }
-        #color-picker::-moz-color-swatch-wrapper { padding: 0; }
-        #color-picker::-moz-color-swatch { border: 2px solid var(--border-color); border-radius: 50%; }
-
-        #pen-size-input {
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            width: 40px;
-            height: 40px;
-            border: none;
-            border-radius: 10px;
-            background-color: var(--button-background);
-            color: var(--text-color);
-            font-size: 1em;
-            text-align: center;
-            margin-bottom: 15px;
-            padding: 0;
-            -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
-            -moz-box-sizing: border-box;    /* Firefox, other Gecko */
-            box-sizing: border-box;         /* Opera/IE 8+ */
-        }
-        #pen-size-input:focus {
-            outline: none;
-            border: 2px solid var(--primary-color);
-        }
-
-
-        /* Style cho watermark */
-        #watermark {
-            position: fixed;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 0.8em;
-            color: rgba(0, 0, 0, 0.2);
-            z-index: 99;
-            pointer-events: none; /* Không cho phép watermark chặn sự kiện chuột */
-        }
-
-        /* Style cho modal thông báo */
-        #maintenance-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5); /* Backdrop tối */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000; /* Đảm bảo modal ở trên cùng */
-        }
-
-        #maintenance-modal-content {
-            background-color: white;
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-        }
-
-        #maintenance-modal h2 {
-            margin-top: 0;
-            color: var(--secondary-color);
-        }
-
-        #maintenance-modal p {
-            margin-bottom: 20px;
-            color: var(--text-color);
-        }
-
-        #maintenance-modal button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            background-color: var(--primary-color);
-            color: white;
-            cursor: pointer;
-            font-size: 1em;
-            transition: background-color 0.2s ease;
-        }
-
-        #maintenance-modal button:hover {
-            background-color: var(--icon-hover-color);
-        }
-
-
-        @media (max-width: 768px) {
-            #toolbar { width: 60px; padding: 10px; }
-            #toolbar button { width: 40px; height: 40px; padding: 8px; font-size: 1.2em; }
-            #canvas-container { left: 60px; width: calc(100vw - 60px); }
-            #maintenance-modal-content { padding: 20px; }
-            #maintenance-modal h2 { font-size: 1.5em; }
-            #maintenance-modal p { font-size: 1em; }
-            #maintenance-modal button { font-size: 1em; padding: 8px 16px; }
-        }
-    </style>
+    /* CSS giữ nguyên */
+    #toolbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 80px;
+      height: 100vh;
+      background-color: var(--toolbar-background);
+      padding: 20px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 100;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+    }
+    #toolbar button {
+      margin-bottom: 15px;
+      padding: 12px;
+      width: 50px;
+      height: 50px;
+      border-radius: 10px;
+      border: none;
+      background-color: var(--button-background);
+      color: var(--icon-color);
+      cursor: pointer;
+      font-size: 1.5em;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background-color 0.2s ease, color: 0.2s ease;
+    }
+    #toolbar button:hover {
+      background-color: var(--button-hover-background);
+      color: var(--icon-hover-color);
+    }
+    #toolbar button.active {
+      background-color: var(--button-active-background);
+      color: var(--icon-active-color);
+    }
+    #canvas-container {
+      position: absolute;
+      top: 0;
+      left: 80px;
+      width: calc(100vw - 80px);
+      height: 100vh;
+      overflow: hidden;
+      touch-action: none;
+      background-color: var(--background-color);
+      cursor: grab;
+    }
+    #canvas-container.panning {
+      cursor: grabbing;
+    }
+    #canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+    }
+    #watermark-text {
+      position: fixed;
+      top: 10px;
+      left: 90px;
+      font-size: 12px;
+      color: rgba(0, 0, 0, 0.2);
+      pointer-events: none;
+      z-index: 99;
+    }
+    @media (max-width: 768px) {
+      #toolbar {
+        width: 60px;
+        padding: 10px;
+      }
+      #toolbar button {
+        width: 40px;
+        height: 40px;
+        padding: 8px;
+        font-size: 1.2em;
+      }
+      #canvas-container {
+        left: 60px;
+        width: calc(100vw - 60px);
+      }
+      #watermark-text {
+        left: 70px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div id="toolbar">
-        <button id="pen-button" class="active" title="Bút"><i class="fas fa-pen"></i></button>
-        <button id="eraser-button" title="Tẩy"><i class="fas fa-eraser"></i></button>
-        <button id="stroke-eraser-button" title="Xóa nét vẽ"><i class="fas fa-vector-square"></i></button>
-        <button id="clear-button" title="Xóa bảng vẽ"><i class="fas fa-trash"></i></button>
-        <input type="color" id="color-picker" value="#000000" title="Chọn màu bút">
-        <input type="number" id="pen-size-input" value="2" min="1" max="50" title="Kích thước bút">
-        <button id="undo-button" title="Undo"><i class="fas fa-undo"></i></button>
-        <button id="redo-button" title="Redo"><i class="fas fa-redo"></i></button>
-        <!-- Thêm các nút công cụ khác vào đây -->
-    </div>
-    <div id="canvas-container">
-        <div id="drawing-canvas-container">
-            <!-- Các chunk canvas sẽ được thêm vào đây -->
-        </div>
-    </div>
+  <div id="toolbar">
+    <button id="pen-button" class="active" title="Bút"><i class="fas fa-pen"></i></button>
+    <button id="eraser-button" title="Tẩy nét vẽ"><i class="fas fa-eraser"></i></button>
+    <button id="clear-button" title="Xóa bảng vẽ"><i class="fas fa-trash"></i></button>
+  </div>
+  <div id="canvas-container">
+    <canvas id="canvas"></canvas>
+  </div>
+  <div id="watermark-text">@VTriP Official - SolarBoard 1.0 Beta</div>
 
-    <div id="watermark">@VTriP Official - SolarBoard 1.0 Beta</div>
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const canvasContainer = document.getElementById('canvas-container');
 
-    <div id="maintenance-modal">
-        <div id="maintenance-modal-content">
-            <h2>Chế độ Online Đang Bảo Trì</h2>
-            <p>Xin lỗi, chế độ trực tuyến của SolarBoard hiện đang được bảo trì để nâng cấp và cải thiện trải nghiệm của bạn. Chế độ Offline vẫn hoạt động bình thường.</p>
-            <button id="close-modal-button">Tiếp tục sử dụng Offline</button>
-        </div>
-    </div>
+    let scale = 1, translateX = 0, translateY = 0;
+    let strokes = [];
+    let currentStroke = null;
+    let isDrawing = false;
+    let isPanning = false;
+    let lastPanX = 0, lastPanY = 0;
+    let currentTool = 'pen';
+    let penColor = 'black';
+    let penSize = 2;
+    let eraserSize = 5;
 
+    function resizeCanvas() {
+      canvas.width = canvasContainer.offsetWidth;
+      canvas.height = canvasContainer.offsetHeight;
+      draw();
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
 
-    <script>
-        const canvasContainer = document.getElementById('canvas-container');
-        const drawingCanvasContainer = document.getElementById('drawing-canvas-container');
-        const penButton = document.getElementById('pen-button');
-        const eraserButton = document.getElementById('eraser-button');
-        const strokeEraserButton = document.getElementById('stroke-eraser-button');
-        const clearButton = document.getElementById('clear-button');
-        const colorPicker = document.getElementById('color-picker');
-        const penSizeInput = document.getElementById('pen-size-input');
-        const undoButton = document.getElementById('undo-button');
-        const redoButton = document.getElementById('redo-button');
-        const maintenanceModal = document.getElementById('maintenance-modal');
-        const closeModalButton = document.getElementById('close-modal-button');
-
-        let isDrawing = false;
-        let lastX = 0;
-        let lastY = 0;
-        let penColor = colorPicker.value; // Lấy màu từ color picker
-        let penSize = parseInt(penSizeInput.value); // Lấy size từ input, đảm bảo là số nguyên
-        let currentTool = 'pen';
-        let currentStroke = null;
-        let strokes = [];
-        let isStrokeErasing = false;
-        let history = []; // Mảng lưu trữ history các strokes
-        let historyStep = -1; // Bước history hiện tại
-
-        const chunkSize = 500;
-        const chunks = {};
-
-        let scale = 1;
-        let translateX = 0;
-        let translateY = 0;
-        let isPanning = false;
-        let startX = 0;
-        let startY = 0;
-        let initialPinchDistance = null;
-        let lastScale = 1;
-        const minScale = 0.2;
-        const maxScale = 4;
-
-        // **Ẩn modal bảo trì sau khi load trang (nếu muốn modal hiển thị ban đầu)**
-        // maintenanceModal.style.display = 'none'; // Nếu muốn ẩn modal sau khi load trang
-
-        // **Đóng modal khi click nút**
-        closeModalButton.addEventListener('click', () => {
-            maintenanceModal.style.display = 'none';
-        });
-
-
-        function getChunkCoords(x, y) {
-            const chunkX = Math.floor(x / chunkSize);
-            const chunkY = Math.floor(y / chunkSize);
-            return `${chunkX}_${chunkY}`;
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.setTransform(scale, 0, 0, scale, translateX, translateY);
+      drawGrid();
+      strokes.forEach(stroke => {
+        if (stroke.points.length < 2) return;
+        ctx.beginPath();
+        ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+        // Vẽ đường cong Bezier
+        for (let i = 1; i < stroke.points.length - 1; i++) {
+          const midPoint = {
+            x: (stroke.points[i].x + stroke.points[i + 1].x) / 2,
+            y: (stroke.points[i].y + stroke.points[i + 1].y) / 2
+          };
+          ctx.quadraticCurveTo(
+            stroke.points[i].x, stroke.points[i].y,
+            midPoint.x, midPoint.y
+          );
         }
+        // Vẽ đoạn cuối từ điểm gần cuối đến điểm cuối
+        ctx.lineTo(stroke.points[stroke.points.length - 1].x, stroke.points[stroke.points.length - 1].y);
 
-        function getChunkCanvas(chunkX, chunkY) {
-            const chunkId = `${chunkX}_${chunkY}`;
-            if (!chunks[chunkId]) {
-                const chunkCanvas = document.createElement('canvas');
-                chunkCanvas.className = 'drawing-chunk-canvas';
-                chunkCanvas.width = chunkSize;
-                chunkCanvas.height = chunkSize;
-                chunkCanvas.style.left = `${chunkX * chunkSize}px`;
-                chunkCanvas.style.top = `${chunkY * chunkSize}px`;
-                drawingCanvasContainer.appendChild(chunkCanvas);
-                chunks[chunkId] = chunkCanvas;
-                return chunkCanvas.getContext('2d');
-            }
-            return chunks[chunkId].getContext('2d');
+
+        ctx.strokeStyle = stroke.color;
+        ctx.lineWidth = stroke.size;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round'; // Thêm lineJoin để các góc mượt hơn
+        ctx.stroke();
+      });
+      ctx.restore();
+    }
+
+    function drawGrid() {
+      const gridSpacing = 50;
+      let left = -translateX / scale;
+      let top = -translateY / scale;
+      let right = left + canvas.width / scale;
+      let bottom = top + canvas.height / scale;
+
+      ctx.beginPath();
+      for (let x = Math.floor(left / gridSpacing) * gridSpacing; x < right; x += gridSpacing) {
+        ctx.moveTo(x, top);
+        ctx.lineTo(x, bottom);
+      }
+      for (let y = Math.floor(top / gridSpacing) * gridSpacing; y < bottom; y += gridSpacing) {
+        ctx.moveTo(left, y);
+        ctx.lineTo(right, y);
+      }
+      ctx.strokeStyle = "#ccc";
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+    }
+
+    function getVirtualCoords(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: (clientX - rect.left - translateX) / scale,
+        y: (clientY - rect.top - translateY) / scale
+      };
+    }
+
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', handleDraw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+
+    canvasContainer.addEventListener('touchstart', startDrawing, { passive: false });
+    canvasContainer.addEventListener('touchmove', handleDraw, { passive: false });
+    canvasContainer.addEventListener('touchend', stopDrawing);
+    canvasContainer.addEventListener('touchcancel', stopDrawing);
+
+
+    function startDrawing(e) {
+      if (isPanning || (e.touches && e.touches.length > 1)) return;
+      if (currentTool === 'eraser') return;
+
+      isDrawing = true;
+      const point = getVirtualCoords(e.clientX ?? e.touches[0].clientX, e.clientY ?? e.touches[0].clientY);
+      lastX = point.x;
+      lastY = point.y;
+      currentStroke = { tool: currentTool, points: [point], color: penColor, size: penSize };
+      strokes.push(currentStroke);
+    }
+
+    function handleDraw(e) {
+      if (!isDrawing || isPanning) return;
+      e.preventDefault();
+
+      const point = getVirtualCoords(e.clientX ?? e.touches[0].clientX, e.clientY ?? e.touches[0].clientY);
+      mouseX = point.x;
+      mouseY = point.y;
+
+      if (!currentStroke) return;
+
+      currentStroke.points.push(point);
+
+      ctx.save();
+      ctx.setTransform(scale, 0, 0, scale, translateX, translateY);
+      ctx.beginPath();
+      const pts = currentStroke.points;
+      if (pts.length > 2) { // Đảm bảo có đủ điểm để vẽ curve
+        const lastMidPoint = {
+            x: (pts[pts.length - 3].x + pts[pts.length - 2].x) / 2,
+            y: (pts[pts.length - 3].y + pts[pts.length - 2].y) / 2
+        };
+        const controlPoint = pts[pts.length - 2];
+        ctx.moveTo(lastMidPoint.x, lastMidPoint.y);
+        ctx.quadraticCurveTo(
+            controlPoint.x, controlPoint.y,
+            point.x, mouseY // Điểm cuối là mouseX, mouseY hiện tại
+        );
+
+
+      } else if (pts.length === 2) {
+          const last = pts[pts.length - 2];
+          ctx.moveTo(last.x, last.y);
+          ctx.lineTo(mouseX, mouseY);
+      }
+
+
+      ctx.strokeStyle = currentStroke.color;
+      ctx.lineWidth = currentStroke.size;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+      ctx.restore();
+
+      lastX = mouseX;
+      lastY = mouseY;
+    }
+
+
+    function stopDrawing() {
+      isDrawing = false;
+      currentStroke = null;
+      isPanning = false;
+      canvasContainer.classList.remove('panning');
+      draw();
+    }
+
+
+    // Zoom và Pan (giữ nguyên từ code trước)
+    let lastTouchDist = null;
+    let lastTouchCenter = null;
+    canvasContainer.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 2) {
+        lastTouchDist = getTouchDistance(e.touches[0], e.touches[1]);
+        lastTouchCenter = getTouchCenter(e.touches[0], e.touches[1]);
+        isPanning = true;
+        canvasContainer.classList.add('panning');
+        isDrawing = false;
+      }
+    }, { passive: false });
+
+    canvasContainer.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        isDrawing = false;
+        isPanning = true;
+        const newDist = getTouchDistance(e.touches[0], e.touches[1]);
+        const newCenter = getTouchCenter(e.touches[0], e.touches[1]);
+        const zoomFactor = newDist / lastTouchDist;
+        scale *= zoomFactor;
+        translateX = newCenter.x - zoomFactor * (lastTouchCenter.x - translateX);
+        translateY = newCenter.y - zoomFactor * (lastTouchCenter.y - translateY);
+        lastTouchDist = newDist;
+        lastTouchCenter = newCenter;
+        draw();
+      } else if (currentTool === 'eraser' && e.touches.length === 1) {
+        e.preventDefault();
+        const virtualPos = getVirtualCoords(e.touches[0].clientX, e.touches[0].clientY);
+        eraseStrokeAt(virtualPos);
+      }     else if (e.touches.length === 1 && currentTool !== 'eraser') {
+        e.preventDefault();
+        isDrawing = true;
+        isPanning = false;
+        handleDraw(e);
+      }
+    }, { passive: false });
+
+    canvasContainer.addEventListener('touchend', (e) => {
+      if (e.touches.length <= 1) {
+        isDrawing = false;
+        isPanning = false;
+        canvasContainer.classList.remove('panning');
+        draw();
+      }
+    });
+    canvasContainer.addEventListener('touchcancel', (e) => {
+        isDrawing = false;
+        isPanning = false;
+        canvasContainer.classList.remove('panning');
+    });
+
+    function getTouchDistance(t1, t2) {
+      const dx = t2.clientX - t1.clientX;
+      const dy = t2.clientY - t1.clientY;
+      return Math.hypot(dx, dy);
+    }
+    function getTouchCenter(t1, t2) {
+      return {
+        x: (t1.clientX + t2.clientX) / 2,
+        y: (t1.clientY + t2.clientY) / 2
+      };
+    }
+
+    // Hàm xóa nét vẽ tại vị trí ảo (giữ nguyên từ code trước)
+    function eraseStrokeAt(virtualPoint) {
+      for (let i = strokes.length - 1; i >= 0; i--) {
+        const stroke = strokes[i];
+        for (let j = 0; j < stroke.points.length - 1; j++) {
+          const p1 = stroke.points[j];
+          const p2 = stroke.points[j+1];
+          if (isPointOnLine(virtualPoint, p1, p2, eraserSize / scale )) {
+            strokes.splice(i, 1);
+            draw();
+            return;
+          }
         }
+      }
+    }
 
-        function drawLineInChunk(ctx, x1, y1, x2, y2, color, size) {
-            ctx.beginPath();
-            ctx.strokeStyle = color;
-            ctx.lineWidth = size;
-            ctx.lineCap = 'round';
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.stroke();
+    function isPointOnLine(p, p1, p2, tolerance) {
+      const d = Math.abs((p2.y - p1.y) * p.x - (p2.x - p1.x) * p.y + p2.x * p1.y - p2.y * p1.x) / Math.hypot(p2.x - p1.x, p2.y - p1.y);
+      if (d <= tolerance) {
+        const dotProduct = (p.x - p1.x) * (p2.x - p1.x) + (p.y - p1.y) * (p2.y - p1.y);
+        const squaredLength = Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2);
+        if (dotProduct >= 0 && dotProduct <= squaredLength) {
+          return true;
         }
-
-        let drawQueue = [];
-        let isAnimating = false;
-
-        function queueDraw(chunkId, x1, y1, x2, y2, color, size) {
-            drawQueue.push({ chunkId, x1, y1, x2, y2, color, size });
-            if (!isAnimating) {
-                isAnimating = true;
-                animateDraw();
-            }
-        }
-
-        function animateDraw() {
-            requestAnimationFrame(() => {
-                if (drawQueue.length > 0) {
-                    const drawData = drawQueue.shift();
-                    const chunkCtx = getChunkCanvasFromId(drawData.chunkId);
-                    if (chunkCtx) {
-                        drawLineInChunk(chunkCtx, drawData.x1, drawData.y1, drawData.x2, drawData.y2, drawData.color, drawData.size);
-                    }
-                    animateDraw();
-                } else {
-                    isAnimating = false;
-                }
-            });
-        }
-
-        function getChunkCanvasFromId(chunkId) {
-            if (chunks[chunkId]) {
-                return chunks[chunkId].getContext('2d');
-            }
-            return null;
-        }
-
-        function handleDraw(e) {
-            if (!isDrawing || isPanning) return;
-            e.preventDefault();
-
-            let mouseX, mouseY;
-            if (e.touches) {
-                mouseX = (e.touches[0].clientX - canvasContainer.offsetLeft) / scale - translateX;
-                mouseY = (e.touches[0].clientY - canvasContainer.offsetTop) / scale - translateY;
-            } else {
-                mouseX = (e.clientX - canvasContainer.offsetLeft) / scale - translateX;
-                mouseY = (e.clientY - canvasContainer.offsetTop) / scale - translateY;
-            }
-
-            const startChunkCoords = getChunkCoords(lastX, lastY);
-            const endChunkCoords = getChunkCoords(mouseX, mouseY);
-
-            if (currentTool === 'pen' || currentTool === 'eraser') {
-                const drawColor = currentTool === 'eraser' ? 'white' : penColor;
-                const drawSize = currentTool === 'eraser' ? 10 : penSize;
-                if (startChunkCoords === endChunkCoords) {
-                    const chunkId = startChunkCoords;
-                    const ctx = getChunkCanvas(parseInt(chunkId.split('_')[0]), parseInt(chunkId.split('_')[1]));
-                    if (ctx) {
-                        queueDraw(chunkId, lastX % chunkSize, lastY % chunkSize, mouseX % chunkSize, mouseY % chunkSize, drawColor, drawSize);
-                    }
-                } else {
-                    const chunkIdEnd = endChunkCoords;
-                    const ctxEnd = getChunkCanvas(parseInt(chunkIdEnd.split('_')[0]), parseInt(chunkIdEnd.split('_')[1]));
-                    if (ctxEnd) {
-                        queueDraw(chunkIdEnd, lastX % chunkSize, lastY % chunkSize, mouseX % chunkSize, mouseY % chunkSize, drawColor, drawSize);
-                    }
-                }
-            }
-
-            if (currentTool === 'pen') {
-                currentStroke.push({x: mouseX, y: mouseY});
-            }
-
-            lastX = mouseX;
-            lastY = mouseY;
-        }
+      }
+      return false;
+    }
 
 
-        function startDrawing(e) {
-            if (isPanning) return;
-            isDrawing = true;
-            let mouseX, mouseY;
-            if (e.touches) {
-                mouseX = (e.touches[0].clientX - canvasContainer.offsetLeft) / scale - translateX;
-                mouseY = (e.touches[0].clientY - canvasContainer.offsetTop) / scale - translateY;
-            } else {
-                mouseX = (e.clientX - canvasContainer.offsetLeft) / scale - translateX;
-                mouseY = (e.clientY - canvasContainer.offsetTop) / scale - translateY;
-            }
-            lastX = mouseX;
-            lastY = mouseY;
+    // ------------------ Xử lý các nút công cụ ------------------
+    const penButton = document.getElementById('pen-button');
+    const eraserButton = document.getElementById('eraser-button');
+    const clearButton = document.getElementById('clear-button');
 
-             if (navigator.vibrate) {
-                navigator.vibrate(10);
-            }
-            if (currentTool === 'pen') {
-                currentStroke = [{x: lastX, y: lastY, color: penColor, size: penSize}]; // Lưu color và size vào stroke
-                strokes.push(currentStroke);
-                saveHistory(); // Lưu history khi bắt đầu vẽ nét mới
-            }
-        }
-
-        function stopDrawing() {
-            isDrawing = false;
-            currentStroke = null;
-            isStrokeErasing = false;
-            canvasContainer.removeEventListener('mousemove', handleStrokeEraseMove);
-            canvasContainer.removeEventListener('touchmove', handleStrokeEraseMove);
-        }
-
-        // **Sự kiện Mouse**
-        canvasContainer.addEventListener('mousedown', startDrawing);
-        canvasContainer.addEventListener('mousemove', handleDraw);
-        canvasContainer.addEventListener('mouseup', stopDrawing);
-        canvasContainer.addEventListener('mouseout', stopDrawing);
-
-        // **Sự kiện Touch (passive: false)**
-        canvasContainer.addEventListener('touchstart', startDrawing);
-        canvasContainer.addEventListener('touchmove', handleDraw, { passive: false });
-        canvasContainer.addEventListener('touchend', stopDrawing);
-        canvasContainer.addEventListener('touchcancel', stopDrawing);
-
-        // **Xử lý nút công cụ**
-        penButton.addEventListener('click', () => {
-            currentTool = 'pen';
-            penButton.classList.add('active');
-            eraserButton.classList.remove('active');
-            strokeEraserButton.classList.remove('active');
-            penButton.classList.add('selected'); // Thêm class 'selected'
-            eraserButton.classList.remove('selected');
-            strokeEraserButton.classList.remove('selected');
-            console.log("Công cụ: Bút");
-        });
-
-        eraserButton.addEventListener('click', () => {
-            currentTool = 'eraser';
-            eraserButton.classList.add('active');
-            penButton.classList.remove('active');
-            strokeEraserButton.classList.remove('active');
-            eraserButton.classList.add('selected'); // Thêm class 'selected'
-            penButton.classList.remove('selected');
-            strokeEraserButton.classList.remove('selected');
-            console.log("Công cụ: Tẩy");
-        });
-
-        clearButton.addEventListener('click', () => {
-            for (const chunkId in chunks) {
-                if (chunks.hasOwnProperty(chunkId)) {
-                    const ctx = chunks[chunkId].getContext('2d');
-                    ctx.clearRect(0, 0, chunkSize, chunkSize);
-                }
-            }
-            strokes = [];
-            saveHistory(); // Lưu history sau khi clear
-            renderVisibleChunks();
-            console.log("Canvas đã được xóa");
-        });
-
-        strokeEraserButton.addEventListener('click', () => {
-            currentTool = 'stroke-eraser';
-            strokeEraserButton.classList.add('active');
-            penButton.classList.remove('active');
-            eraserButton.classList.remove('active');
-            strokeEraserButton.classList.add('selected'); // Thêm class 'selected'
-            penButton.classList.remove('selected');
-            eraserButton.classList.remove('selected');
-            console.log("Công cụ: Xóa nét vẽ");
-        });
-
-        colorPicker.addEventListener('change', (e) => {
-            penColor = e.target.value;
-            console.log("Màu bút: ", penColor);
-        });
-
-        penSizeInput.addEventListener('change', (e) => {
-            penSize = parseInt(e.target.value);
-            penSize = Math.max(1, Math.min(penSize, 50)); // Giới hạn size từ 1 đến 50
-            penSizeInput.value = penSize; // Cập nhật lại giá trị input nếu bị vượt quá giới hạn
-            console.log("Kích thước bút: ", penSize);
-        });
-
-        // **Undo/Redo**
-        undoButton.addEventListener('click', undo);
-        redoButton.addEventListener('click', redo);
-
-        function saveHistory() {
-            const currentHistory = strokes.map(stroke => [...stroke]); // Sao chép stroke để không bị ảnh hưởng bởi thay đổi sau
-            if (historyStep < history.length - 1) {
-                history = history.slice(0, historyStep + 1); // Cắt bỏ redo history nếu có hành động mới
-            }
-            history.push(currentHistory);
-            historyStep++;
-            console.log("History saved, step:", historyStep, "history length:", history.length);
-        }
-
-        function undo() {
-            if (historyStep > 0) {
-                historyStep--;
-                strokes = history[historyStep].map(stroke => [...stroke]); // Load stroke từ history
-                renderVisibleChunks();
-                console.log("Undo, step:", historyStep);
-            }
-        }
-
-        function redo() {
-            if (historyStep < history.length - 1) {
-                historyStep++;
-                strokes = history[historyStep].map(stroke => [...stroke]); // Load stroke từ history
-                renderVisibleChunks();
-                console.log("Redo, step:", historyStep);
-            }
-        }
-
-
-        // **Zoom và Pan**
-        canvasContainer.addEventListener('touchstart', (e) => {
-            if (e.touches.length === 2) {
-                isPanning = true;
-                canvasContainer.classList.add('panning');
-
-                startX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-                startY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-                initialPinchDistance = Math.hypot(
-                    e.touches[0].clientX - e.touches[1].clientX,
-                    e.touches[0].clientY - e.touches[1].clientY
-                );
-                lastScale = scale;
-            }
-        });
-
-        canvasContainer.addEventListener('touchmove', (e) => {
-            if (e.touches.length === 2 && isPanning) {
-                e.preventDefault();
-
-                const currentX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-                const currentY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-                translateX += (currentX - startX) / scale;
-                translateY += (currentY - startY) / scale;
-                startX = currentX;
-                startY = currentY;
-
-                const currentPinchDistance = Math.hypot(
-                    e.touches[0].clientX - e.touches[1].clientX,
-                    e.touches[0].clientY - e.touches[1].clientY
-                );
-                if (initialPinchDistance !== null) {
-                    scale = lastScale * (currentPinchDistance / initialPinchDistance);
-                    scale = Math.max(minScale, Math.min(scale, maxScale));
-                }
-
-                applyTransform();
-                renderVisibleChunks();
-            }
-        });
-
-        canvasContainer.addEventListener('touchend', (e) => {
-            if (e.touches.length < 2) {
-                isPanning = false;
-                canvasContainer.classList.remove('panning');
-                initialPinchDistance = null;
-            }
-        });
-
-        function applyTransform() {
-            drawingCanvasContainer.style.transform = `translate(${translateX * scale}px, ${translateY * scale}px) scale(${scale})`;
-        }
-
-        function renderVisibleChunks() {
-            const containerWidth = canvasContainer.offsetWidth;
-            const containerHeight = canvasContainer.offsetHeight;
-
-            const viewLeft = -translateX;
-            const viewTop = -translateY;
-            const viewRight = viewLeft + containerWidth / scale;
-            const viewBottom = viewTop + containerHeight / scale;
-
-            const startChunkX = Math.floor(viewLeft / chunkSize);
-            const startChunkY = Math.floor(viewTop / chunkSize);
-            const endChunkX = Math.ceil(viewRight / chunkSize);
-            const endChunkY = Math.ceil(viewBottom / chunkSize);
-
-            for (let chunkX = startChunkX; chunkX < endChunkX; chunkX++) {
-                for (let chunkY = startChunkY; chunkY < endChunkY; chunkY++) {
-                    const chunkId = `${chunkX}_${chunkY}`;
-                    getChunkCanvas(chunkX, chunkY);
-                }
-            }
-            redrawAllChunks();
-        }
-
-        function redrawAllChunks() {
-            for (const chunkId in chunks) {
-                if (chunks.hasOwnProperty(chunkId)) {
-                    const ctx = chunks[chunkId].getContext('2d');
-                    ctx.clearRect(0, 0, chunkSize, chunkSize);
-                }
-            }
-            strokes.forEach(stroke => {
-                for (let i = 0; i < stroke.length - 1; i++) {
-                    const p1 = stroke[i];
-                    const p2 = stroke[i+1];
-                    const startChunkCoords = getChunkCoords(p1.x, p1.y);
-                    const endChunkCoords = getChunkCoords(p2.x, p2.y);
-                    const drawColor = p1.color; // Lấy màu từ điểm đầu nét vẽ
-                    const drawSize = p1.size;   // Lấy size từ điểm đầu nét vẽ
-                    if (startChunkCoords === endChunkCoords) {
-                        const chunkId = startChunkCoords;
-                        const ctx = getChunkCanvasFromId(chunkId);
-                        if (ctx) {
-                            drawLineInChunk(ctx, p1.x % chunkSize, p1.y % chunkSize, p2.x % chunkSize, p2.y % chunkSize, drawColor, drawSize);
-                        }
-                    } else {
-                        const chunkIdEnd = endChunkCoords;
-                        const ctxEnd = getChunkCanvasFromId(chunkIdEnd);
-                        if (ctxEnd) {
-                            drawLineInChunk(ctxEnd, p1.x % chunkSize, p1.y % chunkSize, p2.x % chunkSize, p2.y % chunkSize, drawColor, drawSize);
-                        }
-                    }
-                }
-            });
-        }
-
-
-        applyTransform();
-        renderVisibleChunks();
-        canvasContainer.addEventListener('resize', renderVisibleChunks);
-
-        // **Stroke Eraser (Cải tiến vuốt kéo như Eraser thường)**
-        canvasContainer.addEventListener('mousedown', startStrokeErase);
-        canvasContainer.addEventListener('touchstart', startStrokeErase);
-        canvasContainer.addEventListener('mouseup', stopStrokeErase);
-        canvasContainer.addEventListener('mouseout', stopStrokeErase);
-        canvasContainer.addEventListener('touchend', stopStrokeErase);
-        canvasContainer.addEventListener('touchcancel', stopStrokeErase);
-
-
-        function startStrokeErase(e) {
-            if (currentTool === 'stroke-eraser') {
-                isStrokeErasing = true;
-                lastX = e.touches ? (e.touches[0].clientX - canvasContainer.offsetLeft) / scale - translateX : (e.clientX - canvasContainer.offsetLeft) / scale - translateX;
-                lastY = e.touches ? (e.touches[0].clientY - canvasContainer.offsetTop) / scale - translateY : (e.clientY - canvasContainer.offsetTop) / scale - translateY;
-                canvasContainer.addEventListener('mousemove', handleStrokeEraseMove);
-                canvasContainer.addEventListener('touchmove', handleStrokeEraseMove, { passive: false });
-            }
-        }
-
-        function handleStrokeEraseMove(e) {
-            if (!isStrokeErasing) return;
-
-            let mouseX, mouseY;
-            if (e.touches) {
-                mouseX = (e.touches[0].clientX - canvasContainer.offsetLeft) / scale - translateX;
-                mouseY = (e.touches[0].clientY - canvasContainer.offsetTop) / scale - translateY;
-            } else {
-                mouseX = (e.clientX - canvasContainer.offsetLeft) / scale - translateX;
-                mouseY = (e.clientY - canvasContainer.offsetTop) / scale - translateY;
-            }
-
-            const steps = 5;
-            for (let i = 0; i <= steps; i++) {
-                const testX = lastX + (mouseX - lastX) * i / steps;
-                const testY = lastY + (mouseY - lastY) * i / steps;
-                const erasedStrokeIndex = findStrokeAtPoint(testX, testY);
-                if (erasedStrokeIndex !== -1) {
-                    strokes.splice(erasedStrokeIndex, 1);
-                    saveHistory(); // Lưu history khi xóa stroke
-                    renderVisibleChunks();
-                    break;
-                }
-            }
-
-            lastX = mouseX;
-            lastY = mouseY;
-
-        }
-
-
-        function stopStrokeErase(e) {
-            isStrokeErasing = false;
-            canvasContainer.removeEventListener('mousemove', handleStrokeEraseMove);
-            canvasContainer.removeEventListener('touchmove', handleStrokeEraseMove);
-        }
-
-
-        function findStrokeAtPoint(x, y) {
-            for (let i = strokes.length - 1; i >= 0; i--) {
-                const stroke = strokes[i];
-                for (let j = 0; j < stroke.length - 1; j++) {
-                    const p1 = stroke[j];
-                    const p2 = stroke[j+1];
-                    if (isPointOnLine(x, y, p1.x, p1.y, p2.x, p2.y, 5)) {
-                        return i;
-                    }
-                }
-            }
-            return -1;
-        }
-
-        function isPointOnLine(px, py, x1, y1, x2, y2, tolerance) {
-            const d = Math.abs((y2 - y1) * px - (x2 - x1) * py + x2 * y1 - y2 * x1) / Math.sqrt(Math.pow(y2 - y1, 2) + Math.pow(x2 - x1, 2));
-            if (d <= tolerance) {
-                const dotProduct = (px - x1) * (x2 - x1) + (py - y1) * (y2 - y1);
-                const squaredLength = Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2);
-                if (dotProduct >= 0 && dotProduct <= squaredLength) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    </script>
+    penButton.addEventListener('click', () => {
+      currentTool = 'pen';
+      penButton.classList.add('active');
+      eraserButton.classList.remove('active');
+      canvasContainer.style.cursor = 'crosshair';
+      canvas.style.cursor = 'crosshair';
+      canvasContainer.classList.remove('panning');
+    });
+    eraserButton.addEventListener('click', () => {
+      currentTool = 'eraser';
+      eraserButton.classList.add('active');
+      penButton.classList.remove('active');
+      canvasContainer.style.cursor = 'default';
+      canvas.style.cursor = 'default';
+      canvasContainer.classList.remove('panning');
+    });
+    clearButton.addEventListener('click', () => {
+      strokes = [];
+      draw();
+    });
+  </script>
 </body>
 </html>
