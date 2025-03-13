@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Web - roslut for 800626738853052433</title>
+  <style>
+    body { margin: 0; padding-bottom: 60px; font-family: sans-serif; }
+    #footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #333;
+      color: #fff;
+      text-align: center;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <!-- Container để chèn nội dung từ gist -->
+  <div id="gistContent"></div>
+  
+  <!-- Footer hiển thị countdown và thông báo client -->
+  <div id="footer">
+    <div id="countdown"></div>
+    <div>RoSlut Bằng VTriP Client</div>
+  </div>
+  
+  <script>
+    // Nếu URL chứa ?roblox=true, xóa query string sau khi load
+    if(window.location.search.indexOf("roblox=true") !== -1) {
+      history.replaceState(null, "", window.location.pathname);
+    }
+    
+    // Tải nội dung HTML từ gist, chèn vào container và thực thi các thẻ script bên trong
+    fetch("https://gist.githubusercontent.com/TDAIP/025ff406ddcb77195a85d92c25c2e851/raw/664a8e23182f572e9483f11ba0e56612e6184482/gistfile1.txt")
+      .then(response => response.text())
+      .then(data => {
+         var container = document.getElementById("gistContent");
+         container.innerHTML = data;
+         // Lấy tất cả các thẻ script trong nội dung vừa chèn
+         var scripts = container.querySelectorAll("script");
+         scripts.forEach(function(oldScript) {
+             var newScript = document.createElement("script");
+             if(oldScript.src) {
+                 newScript.src = oldScript.src;
+             } else {
+                 newScript.textContent = oldScript.textContent;
+             }
+             document.body.appendChild(newScript);
+         });
+      })
+      .catch(error => {
+         console.error("Lỗi khi tải nội dung HTML từ gist:", error);
+      });
+      
+    // Countdown timer: cập nhật thời gian còn hiệu lực
+    var expirationTime = 1741893764419; // timestamp (milisecond)
+    function updateCountdown() {
+      var now = Date.now();
+      var diff = expirationTime - now;
+      if(diff < 0) diff = 0;
+      var minutes = Math.floor(diff / 60000);
+      var seconds = Math.floor((diff % 60000) / 1000);
+      document.getElementById("countdown").textContent = "Thời gian còn hiệu lực: " + minutes + " phút " + seconds + " giây";
+      if(diff > 0) {
+         setTimeout(updateCountdown, 1000);
+      }
+    }
+    updateCountdown();
+    
+    // Local Storage: lưu dữ liệu dựa trên user_id
+    var userId = "800626738853052433";
+    var localKey = "roslut_" + userId;
+    if(!localStorage.getItem(localKey)) {
+       localStorage.setItem(localKey, JSON.stringify({}));
+    }
+  </script>
+</body>
+</html>
