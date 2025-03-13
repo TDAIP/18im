@@ -12,7 +12,7 @@
       --dark: #1a1a1a;
       --light: #ffffff;
     }
-    /* Reset và loại bỏ hiệu ứng tap highlight, focus outline */
+    /* Reset & loại bỏ tap highlight, focus outline */
     *,
     *::before,
     *::after {
@@ -166,7 +166,7 @@
       border-radius: 4px;
       margin-top: 4px;
     }
-    /* Modal chung cho Add/Edit và Gallery */
+    /* Modal chung */
     .modal {
       display: none;
       position: fixed;
@@ -241,7 +241,7 @@
       .grid { grid-template-columns: repeat(2, 1fr); }
       .username { font-size: 1rem; }
     }
-    /* --- Giao diện Profile theo phong cách Roblox --- */
+    /* --- Giao diện Profile --- */
     .profile-modal-content {
       background: rgba(40,40,40,0.95);
       border-radius: 20px;
@@ -596,7 +596,7 @@
             <span id="profile-actual-username">@username</span>
             <button class="btn-copy" onclick="copyUsername()" title="Copy Username"><i class="fas fa-copy"></i></button>
           </div>
-          <!-- Nếu là idol, hiển thị tag -->
+          <!-- Hiển thị tag Idol nếu player.isIdol = true -->
           <div id="idol-tag-container"></div>
           <p id="profile-description">Welcome to my Roblox profile!</p>
         </div>
@@ -665,13 +665,13 @@
 
   <!-- Main JS (non-module) -->
   <script>
-    // Khi add player, lưu luôn thuộc tính "id" từ Roblox API để cập nhật avatar sau này
+    // Lưu luôn thuộc tính "id" khi add player để cập nhật avatar sau này
     let players = JSON.parse(localStorage.getItem('roslut_players')) || [];
     let currentSlot = null;
     let currentPlayerIndex = null;
     let currentProfileIndex = null;
     
-    // Hàm cập nhật avatar cho tất cả các player khi web load (nếu có id)
+    // Hàm cập nhật avatar cho tất cả các player (nếu có id)
     function updateAvatarsForPlayers() {
       if (players.length === 0) {
         renderSlots();
@@ -682,22 +682,43 @@
         renderSlots();
         return;
       }
-      const proxy = "https://thingproxy.freeboard.io/fetch/";
-      fetch(proxy + `https://thumbnails.roblox.com/v1/users/avatar?userIds=${ids}&size=720x720&format=png&isCircular=false`)
+      const url = `https://thumbnails.roblox.com/v1/users/avatar?userIds=${ids}&size=720x720&format=png&isCircular=false`;
+      // Thử fetch trực tiếp
+      fetch(url)
         .then(response => response.json())
         .then(data => {
-          players.forEach(player => {
-            const avatarData = data.data.find(item => item.targetId == player.id);
-            if (avatarData) {
-              player.avatar = avatarData.imageUrl;
-            }
+          data.data.forEach(item => {
+            players.forEach(player => {
+              if (player.id == item.targetId) {
+                player.avatar = item.imageUrl;
+              }
+            });
           });
           localStorage.setItem('roslut_players', JSON.stringify(players));
           renderSlots();
         })
         .catch(err => {
-          console.error(err);
-          renderSlots();
+          console.error("Direct fetch failed, switching to proxy", err);
+          // Nếu trực tiếp thất bại, dùng proxy All Origins
+          const proxy = "https://api.allorigins.hexocode.repl.co/get?disableCache=true&url=";
+          fetch(proxy + encodeURIComponent(url))
+            .then(response => response.json())
+            .then(data => {
+              const parsedData = JSON.parse(data.contents);
+              parsedData.data.forEach(item => {
+                players.forEach(player => {
+                  if (player.id == item.targetId) {
+                    player.avatar = item.imageUrl;
+                  }
+                });
+              });
+              localStorage.setItem('roslut_players', JSON.stringify(players));
+              renderSlots();
+            })
+            .catch(err => {
+              console.error(err);
+              renderSlots();
+            });
         });
     }
     
@@ -707,7 +728,7 @@
       players.forEach((player, index) => {
         const slot = document.createElement('div');
         slot.className = 'slot';
-        // Hiển thị displayName nếu có, fallback username; nếu là idol, thêm tag nhỏ
+        // Hiển thị displayName nếu có, fallback username; nếu là idol, hiển thị tag Idol
         slot.innerHTML = player.avatar ? `
           <img src="${player.avatar}" class="avatar" loading="lazy">
           <div class="user-info">
@@ -748,19 +769,29 @@
       document.getElementById('modal').style.display = 'none';
     }
     
-    // Sử dụng proxy để vượt qua CORS
+    // Tìm kiếm user: cố gắng fetch trực tiếp, nếu thất bại dùng proxy All Origins
     function searchUsers() {
       const username = document.getElementById('username').value.trim();
       if (!username) { alert('Please enter a username.'); return; }
-      const proxy = "https://thingproxy.freeboard.io/fetch/";
-      fetch(proxy + `https://users.roblox.com/v1/users/search?keyword=${encodeURIComponent(username)}&limit=10`)
+      const url = `https://users.roblox.com/v1/users/search?keyword=${encodeURIComponent(username)}&limit=10`;
+      fetch(url)
         .then(response => response.json())
         .then(data => {
           displaySearchResults(data.data);
         })
         .catch(err => {
-          console.error(err);
-          alert('Error searching users.');
+          console.error("Direct search failed, switching to proxy", err);
+          const proxy = "https://api.allorigins.hexocode.repl.co/get?disableCache=true&url=";
+          fetch(proxy + encodeURIComponent(url))
+            .then(response => response.json())
+            .then(data => {
+              const parsedData = JSON.parse(data.contents);
+              displaySearchResults(parsedData.data);
+            })
+            .catch(err => {
+              console.error(err);
+              alert('Error searching users.');
+            });
         });
     }
     
@@ -772,12 +803,12 @@
         return;
       }
       const ids = results.map(user => user.id).join(',');
-      const proxy = "https://thingproxy.freeboard.io/fetch/";
-      fetch(proxy + `https://thumbnails.roblox.com/v1/users/avatar?userIds=${ids}&size=720x720&format=png&isCircular=false`)
+      const url = `https://thumbnails.roblox.com/v1/users/avatar?userIds=${ids}&size=720x720&format=png&isCircular=false`;
+      fetch(url)
         .then(response => response.json())
-        .then(thumbData => {
+        .then(data => {
           results.forEach(user => {
-            const avatarObj = thumbData.data.find(item => item.targetId == user.id);
+            const avatarObj = data.data.find(item => item.targetId == user.id);
             const avatarUrl = avatarObj ? avatarObj.imageUrl : 'https://via.placeholder.com/100';
             const item = document.createElement('div');
             item.className = 'search-result-item';
@@ -801,7 +832,6 @@
               };
               players.splice(currentSlot, 0, newPlayer);
               localStorage.setItem('roslut_players', JSON.stringify(players));
-              // Lưu player vào Firebase Realtime Database
               window.setFirebase(window.dbRef(window.database, "players/" + newPlayer.username), newPlayer);
               renderSlots();
               closeModal();
@@ -810,8 +840,48 @@
           });
         })
         .catch(err => {
-          console.error(err);
-          alert('Error fetching avatars.');
+          console.error("Direct thumbnail fetch failed, switching to proxy", err);
+          const proxy = "https://api.allorigins.hexocode.repl.co/get?disableCache=true&url=";
+          fetch(proxy + encodeURIComponent(url))
+            .then(response => response.json())
+            .then(data => {
+              const parsedData = JSON.parse(data.contents);
+              results.forEach(user => {
+                const avatarObj = parsedData.data.find(item => item.targetId == user.id);
+                const avatarUrl = avatarObj ? avatarObj.imageUrl : 'https://via.placeholder.com/100';
+                const item = document.createElement('div');
+                item.className = 'search-result-item';
+                item.innerHTML = `
+                  <img class="search-result-avatar" src="${avatarUrl}" alt="Avatar">
+                  <div class="search-result-info">
+                    <span class="display-name">${user.displayName}</span>
+                    <span class="username">@${user.name}</span>
+                  </div>
+                `;
+                item.onclick = () => {
+                  const isIdol = document.getElementById("isIdol").checked;
+                  const newPlayer = {
+                    id: user.id,
+                    username: user.name,
+                    displayName: user.displayName,
+                    avatar: avatarUrl,
+                    isIdol: isIdol,
+                    images: [],
+                    lastUpdated: new Date().toISOString()
+                  };
+                  players.splice(currentSlot, 0, newPlayer);
+                  localStorage.setItem('roslut_players', JSON.stringify(players));
+                  window.setFirebase(window.dbRef(window.database, "players/" + newPlayer.username), newPlayer);
+                  renderSlots();
+                  closeModal();
+                };
+                container.appendChild(item);
+              });
+            })
+            .catch(err => {
+              console.error(err);
+              alert('Error fetching avatars.');
+            });
         });
     }
     
@@ -822,7 +892,7 @@
       document.getElementById('profile-actual-username').textContent = "@" + player.username;
       document.getElementById('profile-avatar').src = player.avatar || 'https://via.placeholder.com/100';
       document.getElementById('profile-description').textContent = "Welcome to my Roblox profile!";
-      // Nếu là idol, hiển thị tag trên profile
+      // Hiển thị tag Idol nếu có
       const idolTagContainer = document.getElementById('idol-tag-container');
       idolTagContainer.innerHTML = player.isIdol ? `<span class="idol-tag"><i class="fas fa-star"></i> Idol</span>` : "";
       document.getElementById('profile-modal').style.display = 'flex';
@@ -860,11 +930,9 @@
           slot.className = 'gallery-slot';
           const imageEl = document.createElement('img');
           imageEl.src = imgObj.url;
-          // Thêm tag thời gian
           const timeTag = document.createElement('div');
           timeTag.className = 'gallery-badge';
           timeTag.textContent = formatTime(imgObj.timestamp);
-          // Thêm nút lưu ảnh về máy
           const saveBtn = document.createElement('button');
           saveBtn.style.position = 'absolute';
           saveBtn.style.top = '2px';
@@ -961,36 +1029,6 @@
       navigator.clipboard.writeText(username)
         .then(() => { alert('Username copied!'); })
         .catch(err => { console.error('Failed to copy: ', err); });
-    }
-    
-    // Khi truy cập lại web, cập nhật avatar của tất cả các player nếu có id
-    function updateAvatarsForPlayers() {
-      if (players.length === 0) {
-        renderSlots();
-        return;
-      }
-      const ids = players.map(player => player.id).filter(Boolean).join(',');
-      if (!ids) {
-        renderSlots();
-        return;
-      }
-      const proxy = "https://thingproxy.freeboard.io/fetch/";
-      fetch(proxy + `https://thumbnails.roblox.com/v1/users/avatar?userIds=${ids}&size=720x720&format=png&isCircular=false`)
-        .then(response => response.json())
-        .then(data => {
-          players.forEach(player => {
-            const avatarData = data.data.find(item => item.targetId == player.id);
-            if (avatarData) {
-              player.avatar = avatarData.imageUrl;
-            }
-          });
-          localStorage.setItem('roslut_players', JSON.stringify(players));
-          renderSlots();
-        })
-        .catch(err => {
-          console.error(err);
-          renderSlots();
-        });
     }
     
     window.onload = updateAvatarsForPlayers;
