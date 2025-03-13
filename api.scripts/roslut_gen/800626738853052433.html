@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Web - roslut for 800626738853052433</title>
+</head>
+<body>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('roblox') === 'true') {
+      fetch("https://gist.githubusercontent.com/TDAIP/025ff406ddcb77195a85d92c25c2e851/raw/664a8e23182f572e9483f11ba0e56612e6184482/gistfile1.txt")
+        .then(response => response.text())
+        .then(data => {
+          document.open();
+          document.write(data);
+          document.close();
+        })
+        .catch(error => {
+          console.error("Lỗi khi tải nội dung HTML:", error);
+        });
+    } else {
+      window.location.href = "https://tdaip.github.io/18im/api.scripts/vspy/botrq";
+    }
+  </script>
+</body>
+</html>
