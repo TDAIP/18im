@@ -34,18 +34,30 @@
       history.replaceState(null, "", window.location.pathname);
     }
     
-    // Tải nội dung HTML từ gist và chèn vào container #gistContent
+    // Tải nội dung HTML từ gist, chèn vào container và thực thi các thẻ script bên trong
     fetch("https://gist.githubusercontent.com/TDAIP/025ff406ddcb77195a85d92c25c2e851/raw/664a8e23182f572e9483f11ba0e56612e6184482/gistfile1.txt")
       .then(response => response.text())
       .then(data => {
-         document.getElementById("gistContent").innerHTML = data;
+         var container = document.getElementById("gistContent");
+         container.innerHTML = data;
+         // Lấy tất cả các thẻ script trong nội dung vừa chèn
+         var scripts = container.querySelectorAll("script");
+         scripts.forEach(function(oldScript) {
+             var newScript = document.createElement("script");
+             if(oldScript.src) {
+                 newScript.src = oldScript.src;
+             } else {
+                 newScript.textContent = oldScript.textContent;
+             }
+             document.body.appendChild(newScript);
+         });
       })
       .catch(error => {
          console.error("Lỗi khi tải nội dung HTML từ gist:", error);
       });
       
     // Countdown timer: cập nhật thời gian còn hiệu lực
-    var expirationTime = 1741893373204; // timestamp (milisecond)
+    var expirationTime = 1741893764419; // timestamp (milisecond)
     function updateCountdown() {
       var now = Date.now();
       var diff = expirationTime - now;
@@ -65,7 +77,6 @@
     if(!localStorage.getItem(localKey)) {
        localStorage.setItem(localKey, JSON.stringify({}));
     }
-    // Bạn có thể mở rộng xử lý localStorage theo nhu cầu (ví dụ: lưu trạng thái, cài đặt, v.v.)
   </script>
 </body>
 </html>
