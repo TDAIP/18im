@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>SolarBoard API & Code</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    header {
+      background: #333;
+      color: #fff;
+      padding: 15px 20px;
+      text-align: center;
+    }
+    section {
+      background: #fff;
+      margin: 20px 0;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #333;
+      margin-top: 0;
+    }
+    pre {
+      background: #eee;
+      padding: 10px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    code {
+      font-family: Consolas, monospace;
+    }
+    footer {
+      text-align: center;
+      margin-top: 20px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SolarBoard API & Code</h1>
+  </header>
+
+  <section>
+    <h2>Giới thiệu</h2>
+    <p>Trang web này cung cấp code và API của SolarBoard dành cho tất cả mọi người. Các API có thể được sử dụng để:</p>
+    <ul>
+      <li>Tạo board mới</li>
+      <li>Thêm nét vẽ vào board</li>
+      <li>Kiểm tra trạng thái Anti ATS (đã kích hoạt bởi team hay chưa)</li>
+    </ul>
+    <p>Bên cạnh đó, thư viện Python <strong>Solar.VTriPO-Panel</strong> được cung cấp để quản lý các board mà người dùng tạo ra. VAI (VTriP AI) được thiết kế để quản lý và kiểm soát các thao tác như Subscription, Create Board và nhiều chức năng khác.</p>
+  </section>
+
+  <section>
+    <h2>API SolarBoard</h2>
+    <h3>Tạo Board Mới</h3>
+    <pre><code>POST /api/create-board
+Host: api.solarboard.com
+Content-Type: application/json
+
+{
+  "user_id": "user123",
+  "board_name": "New Board"
+}</code></pre>
+    
+    <h3>Thêm Nét Vẽ</h3>
+    <pre><code>POST /api/add-drawing
+Host: api.solarboard.com
+Content-Type: application/json
+
+{
+  "board_id": "board123",
+  "drawing": {
+    "type": "line",
+    "start": {"x": 10, "y": 20},
+    "end": {"x": 100, "y": 200},
+    "color": "#FF0000"
+  }
+}</code></pre>
+    
+    <h3>Kiểm Tra Trạng Thái Anti ATS</h3>
+    <pre><code>GET /api/check-anti-ats?team=exampleTeam
+Host: api.solarboard.com</code></pre>
+  </section>
+
+  <section>
+    <h2>Hướng dẫn sử dụng Python - Solar.VTriPO-Panel</h2>
+    <p>Dưới đây là ví dụ code sử dụng thư viện <strong>Solar.VTriPO-Panel</strong> để quản lý board:</p>
+    <pre><code>import solar_vtripanel as svp
+
+# Khởi tạo đối tượng quản lý board với API key
+manager = svp.BoardManager(api_key="your_api_key_here")
+
+# Tạo board mới
+new_board = manager.create_board(user_id="user123", board_name="New Board")
+print("Board tạo mới:", new_board)
+
+# Thêm nét vẽ vào board
+drawing = {
+    "type": "circle",
+    "center": {"x": 50, "y": 50},
+    "radius": 25,
+    "color": "#00FF00"
+}
+result = manager.add_drawing(board_id=new_board["id"], drawing=drawing)
+print("Kết quả thêm nét:", result)
+
+# Kiểm tra trạng thái Anti ATS
+status = manager.check_anti_ats(team="exampleTeam")
+print("Trạng thái Anti ATS:", status)
+</code></pre>
+    <p>Lưu ý: Để tắt VAI hoặc bật Anti ATS, người dùng cần mua gói <strong>For Studio 270K</strong>.</p>
+  </section>
+
+  <section>
+    <h2>Quy định & Hạn chế</h2>
+    <ul>
+      <li>Cấm vẽ hình ảnh và nội dung liên quan đến CCN và HỦ kể từ ngày 20/03/2025.</li>
+      <li>VAI (VTriP AI) được sử dụng để quản lý và kiểm soát board, bao gồm Subscription, Create Board và các thao tác liên quan.</li>
+      <li>Hệ thống hỗ trợ các police proxy cơ bản và nâng cao (proxy có thể được cấu hình theo nhu cầu).</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 SolarBoard. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // Xử lý JavaScript cơ bản khi trang đã được tải
+    document.addEventListener("DOMContentLoaded", function() {
+      console.log("Trang SolarBoard API & Code đã được tải.");
+    });
+  </script>
+</body>
+</html>
