@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MTKou Authentication SDK Demo</title>
+  <style>
+    /* CSS cho trang demo */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    header {
+      background-color: #007acc;
+      color: #fff;
+      padding: 20px 0;
+    }
+    #login-container {
+      margin: 50px auto;
+      max-width: 300px;
+    }
+    p.status {
+      font-style: italic;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>MTKou Authentication SDK Demo</h1>
+  </header>
+  <main>
+    <p>This page demonstrates the integration of the MTKou authentication SDK.</p>
+    
+    <!-- 1. Load the SDK -->
+    <script src="https://a4cbb4d3-4752-444f-a0c5-c6e094c0ecce-00-dby9h3bin54w.spock.replit.dev/sdk/v1.js"></script>
+    <script>
+      // Initialize the SDK with your client ID and redirect URI
+      const mtkou = MTKouSDK.init('demo-client', window.location.href);
+    </script>
+    
+    <p class="status">Status: Loading...</p>
+    
+    <!-- 2. Add Login Button -->
+    <div id="login-container"></div>
+    <script>
+      // Create a login button in the specified container
+      mtkou.createLoginButton('#login-container', {
+        text: 'Sign in with MTKou',
+        theme: 'light',
+        size: 'large'
+      });
+    </script>
+  </main>
+</body>
+</html>
