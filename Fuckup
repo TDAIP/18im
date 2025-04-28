@@ -1,0 +1,24 @@
+-- Tạo UI chào mừng người chơi vào game
+local function createHelloUI(player)
+    local screenGui = Instance.new("ScreenGui")
+    local textLabel = Instance.new("TextLabel")
+    
+    screenGui.Parent = player.PlayerGui
+    textLabel.Parent = screenGui
+    textLabel.Text = "Hello " .. player.Name
+    textLabel.Size = UDim2.new(0, 200, 0, 50)
+    textLabel.Position = UDim2.new(0.5, -100, 0.5, -25)
+end
+
+-- Kiểm tra khi teleport
+game:GetService("TeleportService").TeleportInitFailed:Connect(function()
+    -- Tải lại script mỗi khi teleport
+    local mainScript = require(game.ServerScriptService.MainScript)  -- Chỉnh sửa đường dẫn đến ModuleScript của bạn
+    mainScript.run()  -- Gọi hàm chính trong ModuleScript
+end)
+
+-- Khi người chơi vào game, tạo UI chào mừng
+game.Players.PlayerAdded:Connect(function(player)
+    -- Kiểm tra nếu người chơi đã có UI (lưu trữ thông qua PlayerData hoặc Session)
+    createHelloUI(player)
+end)
